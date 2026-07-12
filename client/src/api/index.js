@@ -76,3 +76,12 @@ export const getUsers = () => api.get('/settings/users').then(r => r.data);
 export const createUser = (data) => api.post('/settings/users', data).then(r => r.data);
 export const updateUser = (id, data) => api.put(`/settings/users/${id}`, data).then(r => r.data);
 export const deleteUser = (id) => api.delete(`/settings/users/${id}`).then(r => r.data);
+
+// Audit Log
+export const getAuditLog = (limit = 50) => api.get('/audit', { params: { limit } }).then(r => r.data);
+
+// Leaderboard
+export const getLeaderboard = () => api.get('/leaderboard').then(r => r.data);
+
+// Carbon Footprint
+export const getCarbonFootprint = () => api.get('/carbon').then(r => r.data);
