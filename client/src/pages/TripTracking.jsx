@@ -49,6 +49,20 @@ const fetchCoordinates = async (query) => {
   return null
 }
 
+const fetchRoadPath = async (coordsList) => {
+  try {
+    const coordinatesString = coordsList.map(c => `${c[1]},${c[0]}`).join(';');
+    const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${coordinatesString}?overview=full&geometries=geojson`);
+    const data = await res.json();
+    if (data.routes && data.routes[0]) {
+      return data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+    }
+  } catch(e) {
+    console.error('Failed to fetch road path', e);
+  }
+  return coordsList;
+};
+
 export default function TripTracking() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -64,19 +78,65 @@ export default function TripTracking() {
     queryFn: async () => {
       const src = await fetchCoordinates(trip.source + ', India') || [19.0760, 72.8777]
       const dst = await fetchCoordinates(trip.destination + ', India') || [28.6139, 77.2090]
-      return { src, dst }
+      const roadPath = await fetchRoadPath([src, dst])
+      return { src, dst, roadPath }
     },
     enabled: !!trip
   })
 
-  const { data: weather } = useQuery({
-    queryKey: ['weather', routeCoords?.dst],
+  const { data: routeWeather } = useQuery({
+    queryKey: ['weather-route', routeCoords?.src, routeCoords?.dst],
     queryFn: async () => {
       if (!routeCoords) return null;
-      const [lat, lng] = routeCoords.dst;
-      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`);
-      const data = await res.json();
-      return data.current_weather;
+      
+      const { src, dst, roadPath } = routeCoords;
+      const mid = roadPath && roadPath.length > 0 ? roadPath[Math.floor(roadPath.length / 2)] : [(src[0]+dst[0])/2, (src[1]+dst[1])/2];
+      
+      const lats = `${src[0]},${mid[0]},${dst[0]}`;
+      const lngs = `${src[1]},${mid[1]},${dst[1]}`;
+      
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&current_weather=true`);
+      let data = await res.json();
+      
+      if (!Array.isArray(data)) data = [data];
+      
+      const getWeatherDesc = (code) => {
+        if (code === 0) return 'Clear';
+        if (code <= 3) return 'Cloudy';
+        if (code <= 48) return 'Foggy';
+        if (code <= 67) return 'Rainy';
+        if (code <= 77) return 'Snowy';
+        if (code >= 95) return 'Stormy';
+        return 'Unknown';
+      };
+      
+      const points = data.map((d, i) => {
+        const w = d.current_weather;
+        return {
+          location: i === 0 ? 'Source' : i === 1 ? 'Midpoint' : 'Destination',
+          temp: Math.round(w.temperature),
+          wind: w.windspeed,
+          code: w.weathercode,
+          desc: getWeatherDesc(w.weathercode)
+        };
+      });
+      
+      const hasStorm = points.some(p => p.code >= 95);
+      const hasRain = points.some(p => p.code >= 51 && p.code <= 67);
+      const hasFog = points.some(p => p.code === 45 || p.code === 48);
+      
+      let overall = 'Optimal / Clear';
+      let overallColor = 'text-emerald-600 dark:text-emerald-400';
+      
+      if (hasStorm) {
+        overall = 'Severe (Thunderstorms)';
+        overallColor = 'text-red-600 dark:text-red-400';
+      } else if (hasRain || hasFog) {
+        overall = 'Caution (Rain/Fog)';
+        overallColor = 'text-amber-600 dark:text-amber-400';
+      }
+      
+      return { points, overall, overallColor };
     },
     enabled: !!routeCoords
   });
@@ -106,13 +166,24 @@ export default function TripTracking() {
         clearInterval(interval);
       }
       
-      const [srcLat, srcLng] = routeCoords.src;
-      const [dstLat, dstLng] = routeCoords.dst;
+      const path = routeCoords.roadPath;
+      if (!path || path.length < 2) return;
       
-      const currentLat = srcLat + (dstLat - srcLat) * progress;
-      const currentLng = srcLng + (dstLng - srcLng) * progress;
+      const totalSegments = path.length - 1;
+      const exactPoint = progress * totalSegments;
+      const index = Math.floor(exactPoint);
       
-      setTruckPos([currentLat, currentLng]);
+      if (index >= totalSegments) {
+        setTruckPos(path[path.length - 1]);
+      } else {
+        const remainder = exactPoint - index;
+        const p1 = path[index];
+        const p2 = path[index + 1];
+        setTruckPos([
+          p1[0] + (p2[0] - p1[0]) * remainder,
+          p1[1] + (p2[1] - p1[1]) * remainder
+        ]);
+      }
     }, 50);
 
     return () => clearInterval(interval);
@@ -187,7 +258,7 @@ export default function TripTracking() {
                   <Marker position={truckPos} icon={truckMarkerIcon} zIndexOffset={1000} />
                 )}
 
-                <Polyline positions={[routeCoords.src, routeCoords.dst]} pathOptions={{ color: '#84cc16', weight: 4, dashArray: '10, 10' }} />
+                <Polyline positions={routeCoords.roadPath} pathOptions={{ color: '#84cc16', weight: 4, dashArray: trip.status === 'Dispatched' ? undefined : '10, 10' }} />
               </MapContainer>
             ) : (
               <div className="w-full h-full flex items-center justify-center text-zinc-500">Loading map...</div>
@@ -220,17 +291,27 @@ export default function TripTracking() {
         <div className="space-y-6">
           
           {/* Weather Visual */}
-          {weather && (
+          {routeWeather && (
             <Card className="rounded-[2rem] border-zinc-200/50 dark:border-white/5 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/10 dark:to-blue-900/10">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Destination Weather</h3>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{trip?.destination}</p>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Route Conditions</h3>
+                  <p className={`text-xs font-bold mt-1 ${routeWeather.overallColor}`}>{routeWeather.overall}</p>
                 </div>
-                <div className="text-right">
-                  <div className="text-3xl font-black text-sky-600 dark:text-sky-400">{Math.round(weather.temperature)}°</div>
-                  <div className="text-[10px] font-bold text-sky-700/60 dark:text-sky-400/60 uppercase tracking-wider mt-1">Wind {weather.windspeed}km/h</div>
-                </div>
+              </div>
+              
+              <div className="space-y-3">
+                {routeWeather.points.map((pt, i) => (
+                  <div key={i} className="flex justify-between items-center bg-white/50 dark:bg-zinc-900/50 p-2.5 rounded-xl border border-white/20 dark:border-white/5">
+                    <div>
+                      <p className="text-[10px] font-bold text-zinc-500 uppercase">{pt.location}</p>
+                      <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{pt.desc} • {pt.wind} km/h</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-black text-sky-600 dark:text-sky-400">{pt.temp}°</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </Card>
           )}
