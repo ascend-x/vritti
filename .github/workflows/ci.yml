@@ -31,7 +31,7 @@ jobs:
 
     # Docker Compose build test
     - name: Build Docker Containers
-      run: docker-compose build
+      run: docker compose build
 
     # Optional: Push to Docker Hub or AWS ECR would go here
     - name: Success Summary
