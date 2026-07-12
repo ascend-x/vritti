@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ./server
+    ports:
+      - "5000:5000"
+    # Persist the SQLite database across container restarts
+    volumes:
+      - ./server/data:/app/data
+    env_file:
+      - ./server/.env
+    restart: unless-stopped
+
+  client:
+    build:
+      context: ./client
+    ports:
+      - "8080:80" # Maps localhost:8080 to Nginx
+    depends_on:
+      - server
+    restart: unless-stopped
+
