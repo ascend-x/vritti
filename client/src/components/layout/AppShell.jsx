@@ -2,10 +2,16 @@ import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopBar from './TopBar';
+import CommandPalette from '../ui/CommandPalette';
+import AIAssistant from '../ui/AIAssistant';
 import { useThemeStore } from '../../store/themeStore';
+import { useIdleTimeout } from '../../hooks/useIdleTimeout';
 
 export default function AppShell() {
   const initTheme = useThemeStore(s => s.initTheme);
+  
+  // Auto-logout after 15 minutes of inactivity for security
+  useIdleTimeout(15);
   
   useEffect(() => {
     initTheme();
@@ -22,6 +28,8 @@ export default function AppShell() {
           </div>
         </main>
       </div>
+      <CommandPalette />
+      <AIAssistant />
     </div>
   );
 }
