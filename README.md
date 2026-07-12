@@ -12,7 +12,7 @@ The application follows a decoupled client-server monorepo architecture:
 ```mermaid
 graph TD
     subgraph Frontend [Client - React / Vite]
-        UI[React Components] --> Store[Zustand Auth Store]
+        UI[React Components] --> Store[Zustand Auth/Notification Stores]
         UI --> RQ[React Query Data Cache]
         RQ --> Axios[Axios Interceptors]
     end
@@ -52,76 +52,70 @@ stateDiagram-v2
 
 ## 🚀 In-Depth Platform Features
 
-### 🚛 1. Fleet Registry & Vehicle Management
+### 🧠 1. AI Assistant & Command Palette
+- **AI Chatbot**: Context-aware AI assistant to answer questions about operations, rules, and fleet management.
+- **Global Command Palette**: Hit `Cmd+K` / `Ctrl+K` to quickly navigate anywhere in the platform, dispatch trips, or look up drivers instantly.
+
+### 🗺️ 2. Route Optimization & Tracking
+- **Smart Routing**: Integrates with OSRM (Open Source Routing Machine) to visualize and optimize travel paths between origin and destination.
+- **Live Trip Board**: A drag-and-drop Kanban board for managing trips dynamically across states (Draft -> Dispatched -> Completed).
+
+### 🚛 3. Fleet Registry & Vehicle Management
 - **Complete Vehicle Profiles**: Track essential metrics like max load capacity, acquisition costs, current odometer readings, and regional assignments.
-- **Real-Time Status Tracking**: Vehicles transition automatically between `Available`, `On Trip`, `In Shop`, and `Retired`.
 - **Intelligent Validations**: Prevents dispatching vehicles that are overloaded (cargo exceeds max load), currently on a trip, or in maintenance.
 
-### 🧑‍✈️ 2. Driver Management & Safety
+### 🧑‍✈️ 4. Driver Management & Leaderboard
+- **Driver Leaderboard**: Gamified system ranking drivers by safety scores, completed trips, and revenue generated.
 - **License Expiry Monitoring**: Smart alerts and visual badges for licenses expiring within 30 days. Automatically prevents dispatching drivers with expired licenses.
 - **Safety Scores**: Gamified safety tracking. Safety Officers can manually adjust scores based on driving behavior, directly affecting dispatch prioritization.
-- **Disciplinary Actions**: Suspend or reinstate drivers with a single click, instantly blocking them from new trip assignments.
 
-### 🛣️ 3. Dispatch & Trip Operations
-- **End-to-End Workflow**: Move trips from `Draft` to `Dispatched` to `Completed` with seamless UI interactions.
-- **Atomic Locking**: Dispatching a trip locks the vehicle and driver. They cannot be assigned to another trip until the current one is completed.
-- **Automated Logging**: Completing a trip requires logging the end odometer reading and fuel consumption, instantly calculating revenue and expenses.
+### 🔔 5. Real-Time Operations & Auditing
+- **Notification Center**: Socket.io powered real-time alerts pushed to all dispatchers when trip states change.
+- **Global Audit Log**: Tracks exactly *who* did *what* and *when* across the entire application to ensure absolute accountability.
+- **Carbon Footprint Calculator**: Tracks and reports on fleet-wide CO2 emissions based on fuel consumption and distance traveled.
 
-### 🔧 4. Maintenance & Servicing
+### 🔧 6. Maintenance & Servicing
 - **Active Maintenance Locks**: Opening a maintenance record instantly marks a vehicle as `In Shop`, hiding it from the dispatch board.
-- **Lifecycle Tracking**: Log repair costs, mechanics, descriptions, and duration.
 - **Auto-Release**: Closing a maintenance ticket immediately returns the vehicle to `Available` status.
 
-### ⛽ 5. Fuel & Expense Tracking
+### ⛽ 7. Fuel & Expense Tracking
 - **Granular Fuel Logs**: Record liters, cost per liter, and filling station data. Ties directly into the vehicle's overall operational costs.
-- **Miscellaneous Expenses**: Log tolls, driver stipends, fines, and other operational expenses categorised by vehicle.
-- **Summary Dashboards**: View side-by-side totals for fuel costs vs. other expenses to spot cash-flow leaks.
 
-### 📊 6. Analytics & ROI Reporting
-- **Fuel Efficiency Trends**: Bar charts identifying the most and least fuel-efficient vehicles (km/L).
+### 📊 8. Analytics & ROI Reporting
 - **Cost Breakdown**: Stacked charts showing Fuel vs. Maintenance costs per vehicle.
-- **Fleet Utilization**: Line graphs showing active trips and vehicles used over time.
 - **Automated ROI Calculations**: Real-time calculation of a vehicle's Return on Investment (Revenue - Operational Costs / Acquisition Cost).
-- **CSV Exports**: One-click download of Analytics data for Excel/financial modeling.
 
-### 🛡️ 7. Role-Based Access Control (RBAC)
+### 🛡️ 9. Role-Based Access Control (RBAC)
 VRITTI is built with enterprise-grade modular permissions:
 - **Fleet Manager**: Full god-mode access (CRUD on everything, retire vehicles).
-- **Dispatcher**: Can manage trips and view drivers/vehicles, but cannot edit safety scores or see maintenance costs.
-- **Safety Officer**: Focused on driver safety, license expiries, and suspensions. Cannot dispatch trips.
+- **Dispatcher**: Can manage trips and view drivers/vehicles.
+- **Safety Officer**: Focused on driver safety, license expiries, and suspensions.
 - **Financial Analyst**: Access strictly limited to Fuel/Expenses, Analytics, and financial exports.
 
 ---
 
-## 🛠 Getting Started
+## 🛠 Getting Started (Production via Docker)
+
+VRITTI is fully containerized for production deployment.
 
 ### 1. Installation
-Clone the repository and install all dependencies:
+Clone the repository:
 ```bash
 git clone https://github.com/ascend-x/vritti.git
 cd vritti
-npm install
-cd client && npm install
-cd ../server && npm install
-cd ..
 ```
 
-### 2. Database Initialization
-Seed the SQLite database with generated demo data:
+### 2. Start the Docker Containers
+This will build the Vite frontend (served via Nginx) and the Node.js backend.
 ```bash
-cd server
-npm run seed
-cd ..
+docker compose up -d --build
 ```
 
-### 3. Running the Platform
-Start both the backend API and the frontend concurrently:
-```bash
-npm run dev
-```
-
-- **Frontend**: [http://localhost:5173](http://localhost:5173)
+### 3. Access the Platform
+- **Frontend App**: [http://localhost:8080](http://localhost:8080)
 - **Backend API**: [http://localhost:5000/api](http://localhost:5000/api)
+
+> **Note**: Your database is persisted locally in the `./server/data` directory. If you want to seed it with demo data, you can run `npm run seed` inside the `./server` folder locally before starting docker.
 
 ---
 
