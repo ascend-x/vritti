@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
-import { Truck, Users, MapPin, Wrench, Activity, Clock, TrendingUp, AlertTriangle, X } from 'lucide-react'
+import { Truck, Users, MapPin, Wrench, Activity, Clock, TrendingUp, AlertTriangle, X, Download, AlertOctagon } from 'lucide-react'
 import { useState } from 'react'
 import { getDashboardKPIs, getRecentTrips, getVehicleStatusDist, getMonthlyRevenue, getExpiringLicenses } from '../api'
 import KPICard from '../components/ui/KPICard'
 import StatusBadge from '../components/ui/StatusBadge'
 import { Card } from '../components/ui/index'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 import { formatCurrency, formatDateTime } from '../utils/constants'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 
@@ -14,6 +16,7 @@ const STATUS_COLORS = {
 
 export default function Dashboard() {
   const [dismissBanner, setDismissBanner] = useState(false)
+  const [dismissFatigue, setDismissFatigue] = useState(false)
 
   const { data: kpis, isLoading: kpiLoading } = useQuery({
     queryKey: ['kpis'], queryFn: getDashboardKPIs, refetchInterval: 30000
@@ -42,8 +45,45 @@ export default function Dashboard() {
     { icon: Users,    label: 'Suspended Drivers',   value: kpis?.drivers_suspended,    color: 'red' },
   ]
 
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(22);
+    doc.text('VRITTI Fleet Operations - Executive Report', 14, 22);
+    
+    doc.setFontSize(11);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 32);
+    doc.text(`Active Vehicles: ${kpis?.active_vehicles || 0}`, 14, 40);
+    doc.text(`Total Trips on Road: ${kpis?.active_trips || 0}`, 14, 46);
+    doc.text(`Fleet Utilization: ${kpis?.fleet_utilization_pct || 0}%`, 14, 52);
+    
+    const tableData = recentTrips.map(t => [
+      t.id, t.vehicle_reg, t.driver_name, t.source, t.destination, t.status
+    ]);
+    
+    autoTable(doc, {
+      startY: 62,
+      head: [['Trip ID', 'Vehicle', 'Driver', 'Source', 'Destination', 'Status']],
+      body: tableData,
+      theme: 'striped',
+      headStyles: { fillColor: [132, 204, 22] }
+    });
+    
+    doc.save('vritti-fleet-report.pdf');
+  };
+
+  const fatiguedDriver = recentTrips.find(t => t.status === 'Dispatched')?.driver_name || 'Ramesh Kumar';
+
   return (
     <div className="space-y-6">
+      
+      {/* Header Actions */}
+      <div className="flex justify-end">
+        <button onClick={generatePDF} className="flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-brand-950 font-bold rounded-xl transition-colors shadow-brand">
+          <Download className="w-4 h-4" />
+          Download PDF Report
+        </button>
+      </div>
+
       {/* License expiry banner */}
       {!dismissBanner && expiring.length > 0 && (
         <div className="flex items-center justify-between gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl animate-fade-in">
@@ -55,6 +95,21 @@ export default function Dashboard() {
             </span>
           </div>
           <button onClick={() => setDismissBanner(true)} className="text-amber-500 hover:text-amber-700 flex-shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Simulated Fatigue Banner */}
+      {!dismissFatigue && (
+        <div className="flex items-center justify-between gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-xl animate-fade-in">
+          <div className="flex items-center gap-2.5 text-red-800">
+            <AlertOctagon className="w-4 h-4 text-red-500 flex-shrink-0" />
+            <span className="text-sm font-medium">
+              ⚠️ <span className="font-bold">Compliance Alert:</span> Driver {fatiguedDriver} has been driving for 11.5 hours. Mandatory rest period required immediately.
+            </span>
+          </div>
+          <button onClick={() => setDismissFatigue(true)} className="text-red-500 hover:text-red-700 flex-shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>
