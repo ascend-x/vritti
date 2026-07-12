@@ -1,0 +1,6 @@
+node_modules
+npm-debug.log
+.env
+vritti.db
+vritti.db-wal
+vritti.db-shm

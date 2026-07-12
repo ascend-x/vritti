@@ -223,3 +223,19 @@ SELECT
     )
     ELSE 0
   END AS fleet_utilization_pct;
+
+-- ─────────────────────────────────────────────────────────
+-- AUDIT LOG
+-- ─────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS audit_log (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id     INTEGER REFERENCES users(id),
+  user_name   TEXT,
+  action      TEXT    NOT NULL,
+  entity_type TEXT    NOT NULL,
+  entity_id   INTEGER,
+  details     TEXT,
+  created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at DESC);
