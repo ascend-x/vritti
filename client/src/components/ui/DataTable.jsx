@@ -57,15 +57,15 @@ export default function DataTable({
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-colors">
+      <div className="overflow-x-auto rounded-3xl border border-zinc-100/50 dark:border-white/5 bg-white dark:bg-zinc-900/90 shadow-soft dark:shadow-none transition-colors">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            <tr className="border-b border-zinc-100/50 dark:border-white/5 bg-zinc-50/50 dark:bg-zinc-800/30">
               {columns.map(col => (
                 <th
                   key={col.key}
-                  className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 whitespace-nowrap
-                    ${col.sortable !== false ? 'cursor-pointer select-none hover:text-slate-700 dark:hover:text-slate-200' : ''}`}
+                  className={`px-5 py-4 text-left text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 whitespace-nowrap
+                    ${col.sortable !== false ? 'cursor-pointer select-none hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors' : ''}`}
                   onClick={() => col.sortable !== false && handleSort(col.key)}
                 >
                   <span className="flex items-center gap-1">
@@ -83,7 +83,7 @@ export default function DataTable({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
+          <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/50">
             {loading
               ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
               : paged.length === 0
@@ -103,11 +103,11 @@ export default function DataTable({
                   <tr
                     key={row.id || i}
                     onClick={() => onRowClick?.(row)}
-                    className={`transition-colors duration-75 ${onRowClick ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800' : ''}
-                      ${i % 2 === 1 ? 'bg-slate-50/50 dark:bg-slate-800/20' : 'bg-white dark:bg-slate-900'}`}
+                    className={`transition-colors duration-150 ${onRowClick ? 'cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/80' : ''}
+                      ${i % 2 === 1 ? 'bg-zinc-50/30 dark:bg-zinc-800/10' : 'bg-transparent'}`}
                   >
                     {columns.map(col => (
-                      <td key={col.key} className="px-4 py-3 text-slate-800 dark:text-slate-200 whitespace-nowrap">
+                      <td key={col.key} className="px-5 py-4 text-zinc-800 dark:text-zinc-200 whitespace-nowrap font-medium">
                         {col.render ? col.render(row[col.key], row) : (row[col.key] ?? '—')}
                       </td>
                     ))}
@@ -119,15 +119,15 @@ export default function DataTable({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-slate-500 dark:text-slate-400">
-          <span>Showing {(page-1)*pageSize+1}–{Math.min(page*pageSize, sorted.length)} of {sorted.length}</span>
+        <div className="flex items-center justify-between text-sm text-zinc-500 dark:text-zinc-400 px-2 mt-2">
+          <span className="font-medium">Showing {(page-1)*pageSize+1}–{Math.min(page*pageSize, sorted.length)} of {sorted.length}</span>
           <div className="flex gap-1">
             <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1}
-              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors">
+              className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 transition-colors">
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page === totalPages}
-              className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 transition-colors">
+              className="p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 transition-colors">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>

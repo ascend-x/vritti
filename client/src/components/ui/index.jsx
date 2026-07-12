@@ -1,20 +1,20 @@
 export function Button({ children, variant = 'primary', size = 'md', loading = false, icon: Icon, className = '', ...props }) {
   const variants = {
-    primary: 'bg-brand-500 hover:bg-brand-600 text-white shadow-sm hover:shadow-brand active:scale-95',
-    secondary: 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500',
-    danger: 'bg-red-500 hover:bg-red-600 text-white active:scale-95',
-    ghost: 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300',
-    success: 'bg-emerald-500 hover:bg-emerald-600 text-white active:scale-95',
+    primary: 'bg-brand-500 hover:bg-brand-400 text-zinc-950 shadow-brand hover:-translate-y-0.5 active:translate-y-0',
+    secondary: 'bg-white dark:bg-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-500 hover:-translate-y-0.5 active:translate-y-0 shadow-sm',
+    danger: 'bg-red-500 hover:bg-red-400 text-white shadow-sm hover:-translate-y-0.5 active:translate-y-0',
+    ghost: 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 active:scale-95',
+    success: 'bg-brand-500 hover:bg-brand-400 text-zinc-950 shadow-brand hover:-translate-y-0.5 active:translate-y-0',
   };
   const sizes = {
-    sm: 'h-8 px-3 text-xs gap-1.5',
-    md: 'h-9 px-4 text-sm gap-2',
-    lg: 'h-10 px-5 text-sm gap-2',
+    sm: 'h-9 px-4 text-xs gap-1.5',
+    md: 'h-10 px-5 text-sm gap-2',
+    lg: 'h-12 px-6 text-sm gap-2',
   };
 
   return (
     <button
-      className={`inline-flex items-center justify-center font-medium rounded-lg transition-all duration-150
+      className={`inline-flex items-center justify-center font-bold rounded-full transition-all duration-200
         ${variants[variant]} ${sizes[size]} ${className}
         disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none`}
       disabled={loading || props.disabled}
@@ -34,9 +34,9 @@ export function Button({ children, variant = 'primary', size = 'md', loading = f
 export function Input({ label, error, className = '', ...props }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>}
+      {label && <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 ml-1">{label}</label>}
       <input className={`input-field ${error ? 'error' : ''} ${className}`} {...props} />
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-red-500 ml-1">{error}</p>}
     </div>
   );
 }
@@ -44,11 +44,11 @@ export function Input({ label, error, className = '', ...props }) {
 export function Select({ label, error, children, className = '', ...props }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>}
+      {label && <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 ml-1">{label}</label>}
       <select className={`input-field ${error ? 'error' : ''} ${className}`} {...props}>
         {children}
       </select>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-red-500 ml-1">{error}</p>}
     </div>
   );
 }
@@ -56,8 +56,8 @@ export function Select({ label, error, children, className = '', ...props }) {
 export function Textarea({ label, error, className = '', ...props }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>}
-      <textarea className={`input-field h-auto py-2.5 resize-none ${error ? 'error' : ''} ${className}`} {...props} />
+      {label && <label className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 ml-1">{label}</label>}
+      <textarea className={`input-field h-auto py-3 resize-none ${error ? 'error' : ''} ${className}`} {...props} />
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   );
@@ -65,10 +65,10 @@ export function Textarea({ label, error, className = '', ...props }) {
 
 export function PageHeader({ title, subtitle, action }) {
   return (
-    <div className="flex items-start justify-between mb-6">
+    <div className="flex items-start justify-between mb-8">
       <div>
-        <h1 className="text-2xl font-bold font-display text-slate-900 dark:text-white">{title}</h1>
-        {subtitle && <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>}
+        <h1 className="text-3xl font-bold font-display text-zinc-900 dark:text-white tracking-tight">{title}</h1>
+        {subtitle && <p className="mt-1.5 text-sm font-medium text-zinc-500 dark:text-zinc-400">{subtitle}</p>}
       </div>
       {action && <div>{action}</div>}
     </div>
@@ -77,15 +77,15 @@ export function PageHeader({ title, subtitle, action }) {
 
 export function Badge({ children, color = 'slate' }) {
   const colors = {
-    slate:   'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
-    amber:   'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400',
+    slate:   'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300',
+    amber:   'bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-400',
     blue:    'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     emerald: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
     red:     'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
     purple:  'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
   };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${colors[color]}`}>
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold tracking-wide uppercase ${colors[color]}`}>
       {children}
     </span>
   );
@@ -93,7 +93,7 @@ export function Badge({ children, color = 'slate' }) {
 
 export function Card({ children, className = '', ...props }) {
   return (
-    <div className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-card p-5 transition-colors ${className}`} {...props}>
+    <div className={`bg-white dark:bg-zinc-900/90 rounded-3xl shadow-soft dark:shadow-none border border-zinc-100/50 dark:border-white/5 p-6 transition-colors ${className}`} {...props}>
       {children}
     </div>
   );

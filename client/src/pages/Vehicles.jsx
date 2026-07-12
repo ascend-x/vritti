@@ -68,7 +68,7 @@ export default function Vehicles() {
   }
 
   const columns = [
-    { key: 'reg_number', label: 'Reg No', render: v => <span className="font-mono text-xs font-semibold text-slate-800">{v}</span> },
+    { key: 'reg_number', label: 'Reg No', render: v => <span className="font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{v}</span> },
     { key: 'name_model', label: 'Name/Model' },
     { key: 'type', label: 'Type' },
     { key: 'max_load_kg', label: 'Capacity', render: v => `${v.toLocaleString('en-IN')} kg` },

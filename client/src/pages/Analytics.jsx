@@ -88,9 +88,9 @@ export default function Analytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Fuel Efficiency */}
         <Card>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Fuel Efficiency (km/L) — Top Vehicles</h3>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Fuel Efficiency (km/L) — Top Vehicles</h3>
           {efficiencyData.length === 0
-            ? <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Complete trips to see efficiency data</div>
+            ? <div className="h-48 flex items-center justify-center text-zinc-400 text-sm">Complete trips to see efficiency data</div>
             : <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={efficiencyData} layout="vertical" barSize={14}>
                   <XAxis type="number" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
@@ -104,9 +104,9 @@ export default function Analytics() {
 
         {/* Cost Breakdown */}
         <Card>
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Operational Cost Breakdown by Vehicle</h3>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Operational Cost Breakdown by Vehicle</h3>
           {costData.length === 0
-            ? <div className="h-48 flex items-center justify-center text-slate-400 text-sm">No cost data yet</div>
+            ? <div className="h-48 flex items-center justify-center text-zinc-400 text-sm">No cost data yet</div>
             : <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={costData} barSize={14}>
                   <XAxis dataKey="reg_number" tick={{ fontSize: 9, fill: '#94A3B8', fontFamily: 'JetBrains Mono' }} axisLine={false} tickLine={false} />
@@ -122,9 +122,9 @@ export default function Analytics() {
 
         {/* Fleet Utilization Trend */}
         <Card className="lg:col-span-2">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Fleet Utilization Trend</h3>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Fleet Utilization Trend</h3>
           {utilization.length === 0
-            ? <div className="h-48 flex items-center justify-center text-slate-400 text-sm">No utilization data yet</div>
+            ? <div className="h-48 flex items-center justify-center text-zinc-400 text-sm">No utilization data yet</div>
             : <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={utilization}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
@@ -142,7 +142,7 @@ export default function Analytics() {
       {/* ROI Table */}
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Vehicle ROI Analysis</h3>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Vehicle ROI Analysis</h3>
           <div className="flex gap-2">
             <Button variant="secondary" icon={FileText} size="sm" onClick={handleExportPDF}>Export PDF</Button>
             <Button variant="secondary" icon={Download} size="sm" onClick={() => handleExport('roi')}>Export CSV</Button>

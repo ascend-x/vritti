@@ -23,22 +23,21 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-60 flex flex-col z-30" style={{ background: '#0F172A' }}>
+    <aside className="fixed left-0 top-0 bottom-0 w-[260px] flex flex-col z-30 bg-sidebar border-r border-white/5">
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-white/5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center flex-shrink-0">
-            <Zap className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <p className="font-bold font-display text-white text-sm leading-tight">VRITTI</p>
-            <p className="text-[10px] text-slate-500 leading-tight">Flow State Ops</p>
-          </div>
+      <div className="px-6 py-6 flex items-center gap-3">
+        <div className="w-10 h-10 bg-brand-400 rounded-xl flex items-center justify-center flex-shrink-0 shadow-brand">
+          <Zap className="w-5 h-5 text-sidebar" fill="currentColor" />
+        </div>
+        <div>
+          <p className="font-bold font-display text-white text-lg leading-tight tracking-wide">VRITTI</p>
+          <p className="text-[11px] text-zinc-500 font-medium leading-tight">Flow State Ops</p>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-0.5">
+      <nav className="flex-1 px-4 py-6 overflow-y-auto space-y-1">
+        <div className="text-xs font-bold text-zinc-600 tracking-wider mb-4 px-2 uppercase">Dashboard</div>
         {navItems.map(item => {
           const Icon = ICON_MAP[item.icon];
           return (
@@ -47,14 +46,14 @@ export default function Sidebar() {
               to={item.path}
               end={item.path === '/'}
               className={({ isActive }) =>
-                `relative flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors duration-150
+                `relative flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 group
                 ${isActive
-                  ? 'nav-active-bar text-brand-400 bg-brand-500/10'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                  ? 'text-brand-400 bg-sidebar-active'
+                  : 'text-zinc-400 hover:text-zinc-100 hover:bg-sidebar-hover'
                 }`
               }
             >
-              {Icon && <Icon className="w-4 h-4 flex-shrink-0" />}
+              {Icon && <Icon className="w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110" />}
               {item.label}
             </NavLink>
           );
@@ -62,17 +61,17 @@ export default function Sidebar() {
       </nav>
 
       {/* User footer */}
-      <div className="px-3 py-4 border-t border-white/5">
-        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg">
-          <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/30 flex items-center justify-center flex-shrink-0">
-            <span className="text-brand-400 text-xs font-bold">{user?.name?.[0]?.toUpperCase()}</span>
+      <div className="p-4 border-t border-white/5">
+        <div className="flex items-center gap-3 px-3 py-3 rounded-2xl bg-sidebar-hover">
+          <div className="w-9 h-9 rounded-full bg-brand-500/10 flex items-center justify-center flex-shrink-0">
+            <span className="text-brand-400 text-sm font-bold">{user?.name?.[0]?.toUpperCase()}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-200 truncate">{user?.name}</p>
-            <p className="text-xs text-slate-500 truncate">{ROLE_LABELS[user?.role]}</p>
+            <p className="text-sm font-bold text-zinc-200 truncate">{user?.name}</p>
+            <p className="text-xs text-zinc-500 truncate font-medium">{ROLE_LABELS[user?.role]}</p>
           </div>
-          <button onClick={handleLogout} className="p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors" title="Logout">
-            <LogOut className="w-3.5 h-3.5" />
+          <button onClick={handleLogout} className="p-2 rounded-xl text-zinc-500 hover:text-zinc-300 hover:bg-white/5 transition-colors" title="Logout">
+            <LogOut className="w-4 h-4" />
           </button>
         </div>
       </div>

@@ -12,7 +12,7 @@ router.get('/', (req, res) => {
     const { status, vehicle_id, driver_id, search } = req.query;
     let sql = `
       SELECT t.*, v.reg_number as vehicle_reg, v.name_model as vehicle_name,
-             d.name as driver_name, d.license_number as driver_license
+             d.name as driver_name, d.license_number as driver_license, d.contact as driver_contact
       FROM trips t
       JOIN vehicles v ON t.vehicle_id = v.id
       JOIN drivers d ON t.driver_id = d.id
@@ -38,7 +38,7 @@ router.get('/:id', (req, res) => {
   try {
     const trip = db.prepare(`
       SELECT t.*, v.reg_number as vehicle_reg, v.name_model as vehicle_name, v.max_load_kg,
-             d.name as driver_name, d.license_number as driver_license
+             d.name as driver_name, d.license_number as driver_license, d.contact as driver_contact
       FROM trips t
       JOIN vehicles v ON t.vehicle_id = v.id
       JOIN drivers d ON t.driver_id = d.id
@@ -65,7 +65,7 @@ router.post('/', authorize('fleet_manager', 'dispatcher'), (req, res) => {
     `).run(vehicle_id, driver_id, source, destination, cargo_weight_kg, planned_distance_km || null, revenue || 0, notes || null);
 
     const trip = db.prepare(`
-      SELECT t.*, v.reg_number as vehicle_reg, d.name as driver_name
+      SELECT t.*, v.reg_number as vehicle_reg, d.name as driver_name, d.contact as driver_contact
       FROM trips t JOIN vehicles v ON t.vehicle_id = v.id JOIN drivers d ON t.driver_id = d.id
       WHERE t.id = ?
     `).get(result.lastInsertRowid);
@@ -92,7 +92,7 @@ router.put('/:id', authorize('fleet_manager', 'dispatcher'), (req, res) => {
       updated_at=datetime('now') WHERE id=?
     `).run(source, destination, cargo_weight_kg, planned_distance_km, revenue, notes, vehicle_id, driver_id, req.params.id);
 
-    res.json(db.prepare('SELECT t.*, v.reg_number as vehicle_reg, d.name as driver_name FROM trips t JOIN vehicles v ON t.vehicle_id = v.id JOIN drivers d ON t.driver_id = d.id WHERE t.id = ?').get(req.params.id));
+    res.json(db.prepare('SELECT t.*, v.reg_number as vehicle_reg, d.name as driver_name, d.contact as driver_contact FROM trips t JOIN vehicles v ON t.vehicle_id = v.id JOIN drivers d ON t.driver_id = d.id WHERE t.id = ?').get(req.params.id));
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });
   }
