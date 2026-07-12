@@ -7,7 +7,7 @@ import { MapContainer, TileLayer, Marker, Polyline, Tooltip } from 'react-leafle
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { formatDateTime } from '../utils/constants'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // Fix for default Leaflet icons
 delete L.Icon.Default.prototype._getIconUrl
@@ -26,6 +26,17 @@ const customIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
+const truckMarkerIcon = L.divIcon({
+  className: 'custom-truck-icon',
+  html: `
+    <div style="background: #84cc16; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(132, 204, 22, 0.5); border: 2.5px solid white;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#052e16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 17h4V5H2v12h3"/><path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h2"/><path d="M14 17h1"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+    </div>
+  `,
+  iconSize: [40, 40],
+  iconAnchor: [20, 20],
+});
+
 const fetchCoordinates = async (query) => {
   try {
     const cleanQuery = query.replace(/(Depot|Hub|Warehouse|Port)/gi, '').trim()
@@ -41,6 +52,7 @@ const fetchCoordinates = async (query) => {
 export default function TripTracking() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const [truckPos, setTruckPos] = useState(null)
 
   const { data: trip, isLoading, error } = useQuery({
     queryKey: ['trip', id],
@@ -56,6 +68,55 @@ export default function TripTracking() {
     },
     enabled: !!trip
   })
+
+  const { data: weather } = useQuery({
+    queryKey: ['weather', routeCoords?.dst],
+    queryFn: async () => {
+      if (!routeCoords) return null;
+      const [lat, lng] = routeCoords.dst;
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`);
+      const data = await res.json();
+      return data.current_weather;
+    },
+    enabled: !!routeCoords
+  });
+
+  useEffect(() => {
+    if (!routeCoords || !trip) return;
+    
+    if (trip.status === 'Completed') {
+      setTruckPos(routeCoords.dst);
+      return;
+    }
+    
+    if (trip.status !== 'Dispatched') {
+      setTruckPos(routeCoords.src);
+      return;
+    }
+
+    let start = Date.now();
+    const duration = 20000; 
+    
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - start;
+      let progress = elapsed / duration;
+      
+      if (progress >= 1) {
+        progress = 1;
+        clearInterval(interval);
+      }
+      
+      const [srcLat, srcLng] = routeCoords.src;
+      const [dstLat, dstLng] = routeCoords.dst;
+      
+      const currentLat = srcLat + (dstLat - srcLat) * progress;
+      const currentLng = srcLng + (dstLng - srcLng) * progress;
+      
+      setTruckPos([currentLat, currentLng]);
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [routeCoords, trip?.status]);
 
   if (isLoading) return <div className="p-8 text-center text-zinc-500">Loading trip tracking...</div>
   if (error || !trip) return <div className="p-8 text-center text-red-500">Failed to load trip details</div>
@@ -106,10 +167,10 @@ export default function TripTracking() {
         <div className="lg:col-span-2 space-y-6">
           <Card className="p-0 overflow-hidden h-[400px] rounded-[2rem] border-zinc-200/50 dark:border-white/5 relative z-0">
             {routeCoords ? (
-              <MapContainer center={routeCoords.src} zoom={5} style={{ height: '100%', width: '100%', background: '#09090b' }} zoomControl={false}>
+              <MapContainer bounds={[routeCoords.src, routeCoords.dst]} boundsOptions={{ padding: [50, 50] }} style={{ height: '100%', width: '100%', background: '#000' }} zoomControl={false} attributionControl={false}>
                 <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                  attribution='&copy; Esri'
                 />
                 <Marker position={routeCoords.src} icon={customIcon}>
                   <Tooltip permanent direction="top" offset={[0, -20]} className="!bg-zinc-900 !text-white !border-zinc-700 !rounded-lg !font-medium">
@@ -121,6 +182,11 @@ export default function TripTracking() {
                     {trip.destination}
                   </Tooltip>
                 </Marker>
+
+                {truckPos && (
+                  <Marker position={truckPos} icon={truckMarkerIcon} zIndexOffset={1000} />
+                )}
+
                 <Polyline positions={[routeCoords.src, routeCoords.dst]} pathOptions={{ color: '#84cc16', weight: 4, dashArray: '10, 10' }} />
               </MapContainer>
             ) : (
@@ -153,6 +219,22 @@ export default function TripTracking() {
         {/* Info Column */}
         <div className="space-y-6">
           
+          {/* Weather Visual */}
+          {weather && (
+            <Card className="rounded-[2rem] border-zinc-200/50 dark:border-white/5 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/10 dark:to-blue-900/10">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">Destination Weather</h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{trip?.destination}</p>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-black text-sky-600 dark:text-sky-400">{Math.round(weather.temperature)}°</div>
+                  <div className="text-[10px] font-bold text-sky-700/60 dark:text-sky-400/60 uppercase tracking-wider mt-1">Wind {weather.windspeed}km/h</div>
+                </div>
+              </div>
+            </Card>
+          )}
+
           {/* Truck Load Visual */}
           <Card className="rounded-[2rem] border-zinc-200/50 dark:border-white/5 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900/90 dark:to-zinc-900/50">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Current Load</h3>

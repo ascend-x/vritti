@@ -1,0 +1,38 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: '**/package-lock.json'
+
+    - name: Install Dependencies
+      run: |
+        cd server && npm ci
+        cd ../client && npm ci
+
+    - name: Build Frontend
+      run: cd client && npm run build
+
+    # Docker Compose build test
+    - name: Build Docker Containers
+      run: docker-compose build
+
+    # Optional: Push to Docker Hub or AWS ECR would go here
+    - name: Success Summary
+      run: echo "🎉 Build and Containerization passed successfully!"
