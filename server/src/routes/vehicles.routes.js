@@ -57,7 +57,7 @@ router.get('/:id', (req, res) => {
 // POST /api/vehicles
 router.post('/', authorize('fleet_manager'), (req, res) => {
   try {
-    const { reg_number, name_model, type, max_load_kg, odometer_km, acquisition_cost, region, notes } = req.body;
+    const { reg_number, name_model, type, max_load_kg, odometer_km, acquisition_cost, region, notes, document_url } = req.body;
     if (!reg_number || !name_model || !type || !max_load_kg) {
       return res.status(400).json({ error: true, message: 'Missing required fields' });
     }
@@ -66,9 +66,9 @@ router.post('/', authorize('fleet_manager'), (req, res) => {
     if (exists) return res.status(409).json({ error: true, code: 'DUPLICATE_REG', message: `Registration number ${reg_number} already exists` });
 
     const result = db.prepare(`
-      INSERT INTO vehicles (reg_number, name_model, type, max_load_kg, odometer_km, acquisition_cost, region, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(reg_number.toUpperCase(), name_model, type, max_load_kg, odometer_km || 0, acquisition_cost || 0, region || null, notes || null);
+      INSERT INTO vehicles (reg_number, name_model, type, max_load_kg, odometer_km, acquisition_cost, region, notes, document_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(reg_number.toUpperCase(), name_model, type, max_load_kg, odometer_km || 0, acquisition_cost || 0, region || null, notes || null, document_url || null);
 
     const vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json(vehicle);
@@ -89,13 +89,13 @@ router.put('/:id', authorize('fleet_manager'), (req, res) => {
       return res.status(409).json({ error: true, message: 'Cannot manually change status while vehicle is On Trip or In Shop' });
     }
 
-    const { name_model, type, max_load_kg, odometer_km, acquisition_cost, region, notes } = req.body;
+    const { name_model, type, max_load_kg, odometer_km, acquisition_cost, region, notes, document_url } = req.body;
     db.prepare(`
       UPDATE vehicles SET name_model=COALESCE(?,name_model), type=COALESCE(?,type),
       max_load_kg=COALESCE(?,max_load_kg), odometer_km=COALESCE(?,odometer_km),
       acquisition_cost=COALESCE(?,acquisition_cost), region=COALESCE(?,region),
-      notes=COALESCE(?,notes), updated_at=datetime('now') WHERE id=?
-    `).run(name_model, type, max_load_kg, odometer_km, acquisition_cost, region, notes, req.params.id);
+      notes=COALESCE(?,notes), document_url=COALESCE(?,document_url), updated_at=datetime('now') WHERE id=?
+    `).run(name_model, type, max_load_kg, odometer_km, acquisition_cost, region, notes, document_url, req.params.id);
 
     res.json(db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id));
   } catch (err) {

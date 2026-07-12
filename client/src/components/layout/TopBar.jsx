@@ -1,5 +1,6 @@
-import { Bell } from 'lucide-react';
+import { Bell, Moon, Sun } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { useThemeStore } from '../../store/themeStore';
 import { ROLE_LABELS, ROLE_COLORS } from '../../utils/constants';
 import { useQuery } from '@tanstack/react-query';
 import { getExpiringLicenses } from '../../api';
@@ -18,6 +19,7 @@ const PAGE_TITLES = {
 
 export default function TopBar() {
   const { user } = useAuthStore();
+  const { theme, toggleTheme } = useThemeStore();
   const location = useLocation();
   const title = PAGE_TITLES[location.pathname] || 'VRITTI';
 
@@ -28,13 +30,18 @@ export default function TopBar() {
   });
 
   return (
-    <header className="h-14 bg-white border-b border-slate-100 flex items-center px-6 gap-4 flex-shrink-0">
-      <h1 className="font-semibold text-slate-900 text-base flex-1">{title}</h1>
+    <header className="h-14 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex items-center px-6 gap-4 flex-shrink-0 transition-colors">
+      <h1 className="font-semibold text-slate-900 dark:text-white text-base flex-1">{title}</h1>
 
       <div className="flex items-center gap-3">
+        {/* Theme toggle */}
+        <button onClick={toggleTheme} className="p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
+          {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+        </button>
+
         {/* License expiry bell */}
         <div className="relative">
-          <button className="p-2 rounded-lg hover:bg-slate-50 text-slate-500 hover:text-slate-700 transition-colors">
+          <button className="p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors">
             <Bell className="w-4 h-4" />
           </button>
           {expiring.length > 0 && (

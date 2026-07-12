@@ -43,6 +43,31 @@ app.use((err, req, res, next) => {
   });
 });
 
+// Setup Email Reminders Job (Bonus Feature)
+const cron = require('node-cron');
+const db = require('./db/database');
+
+cron.schedule('0 9 * * *', () => {
+  console.log('[CRON] Running daily license expiry check...');
+  try {
+    const expiring = db.prepare(`
+      SELECT name, license_number, license_expiry 
+      FROM drivers 
+      WHERE status != 'Suspended' AND license_expiry <= date('now', '+30 days')
+    `).all();
+    
+    if (expiring.length > 0) {
+      console.log(`[CRON] Found ${expiring.length} expiring licenses. Sending email reminders to Safety Officer...`);
+      expiring.forEach(d => {
+        console.log(`[EMAIL MOCK] To: safety@vritti.com | Subj: License Expiring Soon: ${d.name} (${d.license_number}) by ${d.license_expiry}`);
+      });
+    }
+  } catch (err) {
+    console.error('[CRON] Error checking licenses:', err);
+  }
+});
+
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`\n🚛 VRITTI Server running on http://localhost:${PORT}`);
