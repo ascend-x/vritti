@@ -45,6 +45,11 @@ export const NAV_ITEMS = [
   { path: '/maintenance', label: 'Maintenance',   icon: 'Wrench',          roles: ['fleet_manager','dispatcher','safety_officer','financial_analyst'] },
   { path: '/fuel',        label: 'Fuel & Expenses',icon: 'Fuel',           roles: ['fleet_manager','dispatcher','financial_analyst'] },
   { path: '/analytics',   label: 'Analytics',     icon: 'BarChart3',       roles: ['fleet_manager','dispatcher','safety_officer','financial_analyst'] },
+  { path: '/optimizer',   label: 'Route Optimizer',icon: 'Compass',         roles: ['fleet_manager','dispatcher'] },
+  { path: '/leaderboard', label: 'Leaderboard',    icon: 'Trophy',          roles: ['fleet_manager','dispatcher','safety_officer','financial_analyst'] },
+  { path: '/carbon',      label: 'Carbon Impact',  icon: 'Leaf',            roles: ['fleet_manager','dispatcher','safety_officer','financial_analyst'] },
+  { path: '/audit',       label: 'Activity Feed',  icon: 'Activity',        roles: ['fleet_manager'] },
+  { path: '/kanban',      label: 'Kanban Board',   icon: 'Kanban',          roles: ['fleet_manager','dispatcher'] },
   { path: '/settings',    label: 'Settings',      icon: 'Settings',        roles: ['fleet_manager'] },
 ];
 

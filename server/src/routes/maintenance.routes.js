@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../db/database');
 const { authenticate, authorize } = require('../middleware/auth.middleware');
 const { openMaintenance, closeMaintenance } = require('../services/maintenance.service');
+const { logAudit } = require('./audit.routes');
 
 const router = express.Router();
 router.use(authenticate);
@@ -46,6 +47,7 @@ router.post('/', authorize('fleet_manager'), (req, res) => {
       return res.status(400).json({ error: true, message: 'vehicle_id, type, and start_date are required' });
     }
     const record = openMaintenance({ vehicle_id, type, description, start_date, cost, technician, notes });
+    logAudit(req.user?.id, req.user?.name, 'Opened Maintenance', 'maintenance', record.id, `${type} for Vehicle #${vehicle_id}`);
     res.status(201).json(record);
   } catch (err) {
     res.status(err.status || 500).json({ error: true, code: err.code, message: err.message });
@@ -74,6 +76,7 @@ router.put('/:id/close', authorize('fleet_manager'), (req, res) => {
   try {
     const { end_date, cost } = req.body;
     const record = closeMaintenance(req.params.id, { end_date, cost });
+    logAudit(req.user?.id, req.user?.name, 'Closed Maintenance', 'maintenance', record.id);
     res.json(record);
   } catch (err) {
     res.status(err.status || 500).json({ error: true, code: err.code, message: err.message });

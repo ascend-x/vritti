@@ -2,11 +2,45 @@ const express = require('express');
 const db = require('../db/database');
 const { authenticate, authorize } = require('../middleware/auth.middleware');
 const { validateAndDispatch, completeTrip, cancelTrip } = require('../services/trips.service');
+const { logAudit } = require('./audit.routes');
 
 const router = express.Router();
 router.use(authenticate);
 
 // GET /api/trips
+/**
+ * @openapi
+ * /trips:
+ *   get:
+ *     summary: Retrieve a list of trips
+ *     description: Retrieve all trips with optional filtering by status, vehicle, driver, or search string.
+ *     tags: [Trips]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Filter by trip status (e.g., Draft, Dispatched, Completed)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by route, vehicle, or driver name
+ *     responses:
+ *       200:
+ *         description: A list of trips.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 total:
+ *                   type: integer
+ */
 router.get('/', (req, res) => {
   try {
     const { status, vehicle_id, driver_id, search } = req.query;
@@ -34,6 +68,24 @@ router.get('/', (req, res) => {
 });
 
 // GET /api/trips/:id
+/**
+ * @openapi
+ * /trips/{id}:
+ *   get:
+ *     summary: Get a trip by ID
+ *     tags: [Trips]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Trip details
+ *       404:
+ *         description: Trip not found
+ */
 router.get('/:id', (req, res) => {
   try {
     const trip = db.prepare(`
@@ -52,6 +104,39 @@ router.get('/:id', (req, res) => {
 });
 
 // POST /api/trips
+/**
+ * @openapi
+ * /trips:
+ *   post:
+ *     summary: Create a new draft trip
+ *     tags: [Trips]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - vehicle_id
+ *               - driver_id
+ *               - source
+ *               - destination
+ *               - cargo_weight_kg
+ *             properties:
+ *               vehicle_id:
+ *                 type: integer
+ *               driver_id:
+ *                 type: integer
+ *               source:
+ *                 type: string
+ *               destination:
+ *                 type: string
+ *               cargo_weight_kg:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Trip created successfully
+ */
 router.post('/', authorize('fleet_manager', 'dispatcher'), (req, res) => {
   try {
     const { vehicle_id, driver_id, source, destination, cargo_weight_kg, planned_distance_km, revenue, notes } = req.body;
@@ -70,6 +155,7 @@ router.post('/', authorize('fleet_manager', 'dispatcher'), (req, res) => {
       WHERE t.id = ?
     `).get(result.lastInsertRowid);
 
+    logAudit(req.user?.id, req.user?.name, 'Created Trip', 'trip', trip.id, `${source} → ${destination}`);
     res.status(201).json(trip);
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });
@@ -102,6 +188,9 @@ router.put('/:id', authorize('fleet_manager', 'dispatcher'), (req, res) => {
 router.post('/:id/dispatch', authorize('fleet_manager', 'dispatcher'), (req, res) => {
   try {
     const result = validateAndDispatch(req.params.id);
+    if (req.app.get('io')) {
+      req.app.get('io').emit('trip_update', { message: `Trip #${req.params.id} dispatched!`, trip: result });
+    }
     res.json(result);
   } catch (err) {
     res.status(err.status || 500).json({ error: true, code: err.code, message: err.message });

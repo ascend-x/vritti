@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db/database');
 const { authenticate, authorize } = require('../middleware/auth.middleware');
+const { logAudit } = require('./audit.routes');
 
 const router = express.Router();
 router.use(authenticate);
@@ -70,7 +71,9 @@ router.post('/', authorize('fleet_manager', 'safety_officer'), (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(name, license_number, license_category, license_expiry, contact || null, safety_score ?? 100, notes || null);
 
-    res.status(201).json(db.prepare('SELECT * FROM drivers WHERE id = ?').get(result.lastInsertRowid));
+    const driver = db.prepare('SELECT * FROM drivers WHERE id = ?').get(result.lastInsertRowid);
+    logAudit(req.user?.id, req.user?.name, 'Added Driver', 'driver', driver.id, name);
+    res.status(201).json(driver);
   } catch (err) {
     if (err.message?.includes('UNIQUE')) {
       return res.status(409).json({ error: true, message: 'License number already exists' });
@@ -93,6 +96,7 @@ router.put('/:id', authorize('fleet_manager', 'safety_officer'), (req, res) => {
       updated_at=datetime('now') WHERE id=?
     `).run(name, license_number, license_category, license_expiry, contact, safety_score, notes, req.params.id);
 
+    logAudit(req.user?.id, req.user?.name, 'Updated Driver', 'driver', parseInt(req.params.id), name || driver.name);
     res.json(db.prepare('SELECT * FROM drivers WHERE id = ?').get(req.params.id));
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });
@@ -107,6 +111,7 @@ router.patch('/:id/suspend', authorize('fleet_manager', 'safety_officer'), (req,
     if (driver.status === 'On Trip') return res.status(409).json({ error: true, message: 'Cannot suspend a driver currently On Trip' });
 
     db.prepare(`UPDATE drivers SET status='Suspended', updated_at=datetime('now') WHERE id=?`).run(req.params.id);
+    logAudit(req.user?.id, req.user?.name, 'Suspended Driver', 'driver', parseInt(req.params.id), driver.name);
     res.json(db.prepare('SELECT * FROM drivers WHERE id = ?').get(req.params.id));
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });
@@ -117,6 +122,7 @@ router.patch('/:id/suspend', authorize('fleet_manager', 'safety_officer'), (req,
 router.patch('/:id/reinstate', authorize('fleet_manager', 'safety_officer'), (req, res) => {
   try {
     db.prepare(`UPDATE drivers SET status='Available', updated_at=datetime('now') WHERE id=?`).run(req.params.id);
+    logAudit(req.user?.id, req.user?.name, 'Reinstated Driver', 'driver', parseInt(req.params.id));
     res.json(db.prepare('SELECT * FROM drivers WHERE id = ?').get(req.params.id));
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });
