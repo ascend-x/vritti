@@ -52,28 +52,18 @@ body {
 /* Table row hover */
 tbody tr { transition: background 0.1s ease; }
 
-/* Input focus ring — amber brand */
-.input-field {
-  @apply w-full h-10 px-3 border border-slate-200 rounded-lg text-sm text-slate-900 bg-white transition-all duration-150;
-}
-.input-field:focus {
-  @apply outline-none border-brand-500 ring-2 ring-brand-500/20;
-}
-.input-field.error {
-  @apply border-red-400 ring-2 ring-red-400/20;
-}
-
-/* Sidebar active indicator */
-.nav-active-bar::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 20px;
-  background: #F59E0B;
-  border-radius: 0 4px 4px 0;
+@layer components {
+  .input-field {
+    @apply w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400
+           focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-200
+           dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder:text-slate-500;
+  }
+  .input-field.error {
+    @apply border-red-500 focus:ring-red-500/20 focus:border-red-500;
+  }
+  .nav-active-bar {
+    @apply before:absolute before:left-0 before:top-2 before:bottom-2 before:w-1 before:bg-brand-500 before:rounded-r-full;
+  }
 }
 
 /* KPI card hover */

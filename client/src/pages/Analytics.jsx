@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { Download } from 'lucide-react'
+import { Download, FileText } from 'lucide-react'
 import { getVehicleROI, getFuelEfficiency, getCostBreakdown, getFleetUtilization, exportCSV } from '../api'
 import DataTable from '../components/ui/DataTable'
 import { Button, PageHeader, Card } from '../components/ui/index'
 import { formatCurrency } from '../utils/constants'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend } from 'recharts'
 import toast from 'react-hot-toast'
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
 
 const CHART_COLORS = ['#F59E0B', '#3B82F6', '#10B981', '#8B5CF6', '#EF4444']
 
@@ -22,6 +24,34 @@ export default function Analytics() {
     } catch { toast.error('Export failed') }
   }
 
+  const handleExportPDF = () => {
+    try {
+      const doc = new jsPDF();
+      doc.text('Vehicle ROI Analysis', 14, 15);
+      
+      const tableData = roi.map(v => [
+        v.reg_number,
+        v.name_model,
+        v.completed_trips,
+        formatCurrency(v.total_revenue),
+        formatCurrency(v.total_op_cost),
+        formatCurrency(v.acquisition_cost),
+        `${v.roi_pct}%`
+      ]);
+
+      doc.autoTable({
+        head: [['Vehicle', 'Model', 'Trips', 'Revenue', 'Op Cost', 'Acq. Cost', 'ROI %']],
+        body: tableData,
+        startY: 20,
+      });
+      
+      doc.save(`vehicle_roi_${new Date().toISOString().slice(0,10)}.pdf`);
+      toast.success('PDF exported successfully!');
+    } catch {
+      toast.error('Failed to export PDF');
+    }
+  };
+
   const roiColumns = [
     { key: 'reg_number', label: 'Vehicle', render: v => <span className="font-mono text-xs font-semibold">{v}</span> },
     { key: 'name_model', label: 'Model' },
@@ -32,7 +62,7 @@ export default function Analytics() {
     {
       key: 'roi_pct', label: 'ROI %',
       render: v => (
-        <span className={`font-bold text-sm ${v > 0 ? 'text-emerald-600' : v < 0 ? 'text-red-600' : 'text-slate-500'}`}>
+        <span className={`font-bold text-sm ${v > 0 ? 'text-emerald-600 dark:text-emerald-400' : v < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-500'}`}>
           {v > 0 ? '+' : ''}{v}%
         </span>
       )
@@ -58,7 +88,7 @@ export default function Analytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Fuel Efficiency */}
         <Card>
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Fuel Efficiency (km/L) — Top Vehicles</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Fuel Efficiency (km/L) — Top Vehicles</h3>
           {efficiencyData.length === 0
             ? <div className="h-48 flex items-center justify-center text-slate-400 text-sm">Complete trips to see efficiency data</div>
             : <ResponsiveContainer width="100%" height={220}>
@@ -74,7 +104,7 @@ export default function Analytics() {
 
         {/* Cost Breakdown */}
         <Card>
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Operational Cost Breakdown by Vehicle</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Operational Cost Breakdown by Vehicle</h3>
           {costData.length === 0
             ? <div className="h-48 flex items-center justify-center text-slate-400 text-sm">No cost data yet</div>
             : <ResponsiveContainer width="100%" height={220}>
@@ -92,7 +122,7 @@ export default function Analytics() {
 
         {/* Fleet Utilization Trend */}
         <Card className="lg:col-span-2">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Fleet Utilization Trend</h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Fleet Utilization Trend</h3>
           {utilization.length === 0
             ? <div className="h-48 flex items-center justify-center text-slate-400 text-sm">No utilization data yet</div>
             : <ResponsiveContainer width="100%" height={200}>
@@ -112,8 +142,11 @@ export default function Analytics() {
       {/* ROI Table */}
       <Card>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-900">Vehicle ROI Analysis</h3>
-          <Button variant="secondary" icon={Download} size="sm" onClick={() => handleExport('roi')}>Export CSV</Button>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Vehicle ROI Analysis</h3>
+          <div className="flex gap-2">
+            <Button variant="secondary" icon={FileText} size="sm" onClick={handleExportPDF}>Export PDF</Button>
+            <Button variant="secondary" icon={Download} size="sm" onClick={() => handleExport('roi')}>Export CSV</Button>
+          </div>
         </div>
         <DataTable columns={roiColumns} data={roi} emptyMessage="No analytics data. Complete trips to see ROI." />
       </Card>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Truck, Edit, Archive } from 'lucide-react'
+import { Plus, Truck, Edit, Archive, ExternalLink } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { getVehicles, createVehicle, updateVehicle, retireVehicle } from '../api'
 import DataTable from '../components/ui/DataTable'
@@ -12,7 +12,7 @@ import { VEHICLE_TYPES, VEHICLE_STATUSES, REGIONS, formatCurrency } from '../uti
 import { can } from '../utils/rbac'
 import { useAuthStore } from '../store/authStore'
 
-const EMPTY_FORM = { reg_number: '', name_model: '', type: 'Van', max_load_kg: '', odometer_km: '', acquisition_cost: '', region: '', notes: '' }
+const EMPTY_FORM = { reg_number: '', name_model: '', type: 'Van', max_load_kg: '', odometer_km: '', acquisition_cost: '', region: '', notes: '', document_url: '' }
 
 export default function Vehicles() {
   const qc = useQueryClient()
@@ -76,6 +76,7 @@ export default function Vehicles() {
     { key: 'acquisition_cost', label: 'Acq. Cost', render: v => formatCurrency(v) },
     { key: 'region', label: 'Region', render: v => v || '—' },
     { key: 'status', label: 'Status', render: v => <StatusBadge status={v} /> },
+    { key: 'document_url', label: 'Docs', render: v => v ? <a href={v} target="_blank" rel="noreferrer" className="text-brand-500 hover:underline flex items-center gap-1" onClick={e => e.stopPropagation()}><ExternalLink className="w-3 h-3"/> View</a> : <span className="text-slate-400">—</span> },
     {
       key: 'actions', label: '', sortable: false,
       render: (_, row) => (
@@ -111,10 +112,13 @@ export default function Vehicles() {
         <Input label="Odometer (km)" type="number" value={form.odometer_km} onChange={e => handleField('odometer_km', e.target.value)} placeholder="0" />
         <Input label="Acquisition Cost (₹)" type="number" value={form.acquisition_cost} onChange={e => handleField('acquisition_cost', e.target.value)} placeholder="450000" />
       </div>
-      <Select label="Region" value={form.region} onChange={e => handleField('region', e.target.value)}>
-        <option value="">Select region</option>
-        {REGIONS.map(r => <option key={r}>{r}</option>)}
-      </Select>
+      <div className="grid grid-cols-2 gap-4">
+        <Select label="Region" value={form.region} onChange={e => handleField('region', e.target.value)}>
+          <option value="">Select region</option>
+          {REGIONS.map(r => <option key={r}>{r}</option>)}
+        </Select>
+        <Input label="Document Link (URL)" type="url" value={form.document_url || ''} onChange={e => handleField('document_url', e.target.value)} placeholder="https://drive.google.com/..." />
+      </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium text-slate-700">Notes</label>
         <textarea className="input-field h-20 py-2.5 resize-none" value={form.notes} onChange={e => handleField('notes', e.target.value)} placeholder="Optional notes..." />

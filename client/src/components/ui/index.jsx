@@ -1,9 +1,9 @@
 export function Button({ children, variant = 'primary', size = 'md', loading = false, icon: Icon, className = '', ...props }) {
   const variants = {
     primary: 'bg-brand-500 hover:bg-brand-600 text-white shadow-sm hover:shadow-brand active:scale-95',
-    secondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 hover:border-slate-300',
+    secondary: 'bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-600 hover:border-slate-300 dark:hover:border-slate-500',
     danger: 'bg-red-500 hover:bg-red-600 text-white active:scale-95',
-    ghost: 'hover:bg-slate-100 text-slate-600',
+    ghost: 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300',
     success: 'bg-emerald-500 hover:bg-emerald-600 text-white active:scale-95',
   };
   const sizes = {
@@ -34,7 +34,7 @@ export function Button({ children, variant = 'primary', size = 'md', loading = f
 export function Input({ label, error, className = '', ...props }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <label className="text-sm font-medium text-slate-700">{label}</label>}
+      {label && <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>}
       <input className={`input-field ${error ? 'error' : ''} ${className}`} {...props} />
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
@@ -44,7 +44,7 @@ export function Input({ label, error, className = '', ...props }) {
 export function Select({ label, error, children, className = '', ...props }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <label className="text-sm font-medium text-slate-700">{label}</label>}
+      {label && <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>}
       <select className={`input-field ${error ? 'error' : ''} ${className}`} {...props}>
         {children}
       </select>
@@ -56,7 +56,7 @@ export function Select({ label, error, children, className = '', ...props }) {
 export function Textarea({ label, error, className = '', ...props }) {
   return (
     <div className="flex flex-col gap-1.5">
-      {label && <label className="text-sm font-medium text-slate-700">{label}</label>}
+      {label && <label className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</label>}
       <textarea className={`input-field h-auto py-2.5 resize-none ${error ? 'error' : ''} ${className}`} {...props} />
       {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
@@ -67,8 +67,8 @@ export function PageHeader({ title, subtitle, action }) {
   return (
     <div className="flex items-start justify-between mb-6">
       <div>
-        <h1 className="text-2xl font-bold font-display text-slate-900">{title}</h1>
-        {subtitle && <p className="mt-0.5 text-sm text-slate-500">{subtitle}</p>}
+        <h1 className="text-2xl font-bold font-display text-slate-900 dark:text-white">{title}</h1>
+        {subtitle && <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>}
       </div>
       {action && <div>{action}</div>}
     </div>
@@ -77,12 +77,12 @@ export function PageHeader({ title, subtitle, action }) {
 
 export function Badge({ children, color = 'slate' }) {
   const colors = {
-    slate:   'bg-slate-100 text-slate-600',
-    amber:   'bg-brand-50 text-brand-700',
-    blue:    'bg-blue-50 text-blue-700',
-    emerald: 'bg-emerald-50 text-emerald-700',
-    red:     'bg-red-50 text-red-700',
-    purple:  'bg-purple-50 text-purple-700',
+    slate:   'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+    amber:   'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400',
+    blue:    'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+    emerald: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+    red:     'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+    purple:  'bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
   };
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${colors[color]}`}>
@@ -93,7 +93,7 @@ export function Badge({ children, color = 'slate' }) {
 
 export function Card({ children, className = '', ...props }) {
   return (
-    <div className={`bg-white rounded-2xl border border-slate-100 shadow-card p-5 ${className}`} {...props}>
+    <div className={`bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-card p-5 transition-colors ${className}`} {...props}>
       {children}
     </div>
   );
