@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Send, CheckCircle, XCircle, Edit } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -36,6 +37,7 @@ function CapacityBar({ cargo, maxLoad }) {
 
 export default function Trips() {
   const qc = useQueryClient()
+  const navigate = useNavigate()
   const { user } = useAuthStore()
   const role = user?.role
 
@@ -94,14 +96,14 @@ export default function Trips() {
   const cargoOver = selectedVehicle && Number(tripForm.cargo_weight_kg) > selectedVehicle.max_load_kg
 
   const columns = [
-    { key: 'id', label: '#', render: v => <span className="font-mono text-xs text-slate-400">#{v}</span> },
-    { key: 'source', label: 'Route', render: (v, row) => <div><div className="font-medium text-slate-800">{v}</div><div className="text-xs text-slate-400">→ {row.destination}</div></div> },
+    { key: 'id', label: '#', render: v => <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400">#{v}</span> },
+    { key: 'source', label: 'Route', render: (v, row) => <div><div className="font-bold text-zinc-900 dark:text-zinc-100">{v}</div><div className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">→ {row.destination}</div></div> },
     { key: 'vehicle_reg', label: 'Vehicle', render: v => <span className="font-mono text-xs font-semibold">{v}</span> },
     { key: 'driver_name', label: 'Driver' },
     { key: 'cargo_weight_kg', label: 'Cargo', render: v => `${v} kg` },
     { key: 'revenue', label: 'Revenue', render: v => formatCurrency(v) },
     { key: 'status', label: 'Status', render: v => <StatusBadge status={v} /> },
-    { key: 'created_at', label: 'Created', render: v => <span className="text-xs text-slate-400">{formatDateTime(v)}</span> },
+    { key: 'created_at', label: 'Created', render: v => <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">{formatDateTime(v)}</span> },
     {
       key: 'actions', label: '', sortable: false,
       render: (_, row) => (
@@ -151,7 +153,13 @@ export default function Trips() {
         <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search route, vehicle, driver..." className="input-field w-64" />
       </div>
 
-      <DataTable columns={columns} data={trips} loading={isLoading} emptyMessage="No trips found." />
+      <DataTable 
+        columns={columns} 
+        data={trips} 
+        loading={isLoading} 
+        emptyMessage="No trips found." 
+        onRowClick={(row) => navigate(`/trips/${row.id}`)}
+      />
 
       {/* Create Trip Modal */}
       <Modal isOpen={modal === 'create'} onClose={() => setModal(null)} title="Create New Trip" size="lg"

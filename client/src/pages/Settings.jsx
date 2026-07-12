@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2, UserCog } from 'lucide-react'
+import { Plus, Trash2, UserCog, Check, X, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { getUsers, createUser, deleteUser } from '../api'
 import DataTable from '../components/ui/DataTable'
@@ -86,19 +86,23 @@ export default function Settings() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100">
-                <th className="text-left py-2 pr-6 text-xs font-semibold text-slate-400 uppercase tracking-wider">Feature</th>
+              <tr className="border-b border-zinc-100 dark:border-zinc-800">
+                <th className="text-left py-3 pr-6 text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Feature</th>
                 {['Fleet Manager', 'Dispatcher', 'Safety Officer', 'Financial Analyst'].map(r => (
-                  <th key={r} className="text-center py-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">{r}</th>
+                  <th key={r} className="text-center py-3 px-3 text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">{r}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/50">
               {RBAC_TABLE.map(row => (
-                <tr key={row.feature} className="hover:bg-slate-50">
-                  <td className="py-2.5 pr-6 font-medium text-slate-700">{row.feature}</td>
+                <tr key={row.feature} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors">
+                  <td className="py-3 pr-6 font-medium text-zinc-700 dark:text-zinc-300">{row.feature}</td>
                   {[row.fleet, row.dispatcher, row.safety, row.finance].map((v, i) => (
-                    <td key={i} className="py-2.5 px-3 text-center text-base">{v}</td>
+                    <td key={i} className="py-3 px-3 text-center">
+                      {v === '✅' && <Check className="w-4 h-4 text-emerald-500 mx-auto" />}
+                      {v === '❌' && <X className="w-4 h-4 text-zinc-300 dark:text-zinc-700 mx-auto" />}
+                      {v === '👁️' && <Eye className="w-4 h-4 text-blue-500 mx-auto" />}
+                    </td>
                   ))}
                 </tr>
               ))}

@@ -1,62 +1,30 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg-primary:    #FFFFFF;
-  --bg-secondary:  #F8FAFC;
-  --bg-tertiary:   #F1F5F9;
-  --bg-sidebar:    #0F172A;
-
-  --brand-500:     #F59E0B;
-  --brand-400:     #FBBF24;
-  --brand-600:     #D97706;
-
-  --text-primary:   #0F172A;
-  --text-secondary: #475569;
-  --text-muted:     #94A3B8;
-  --text-inverse:   #F8FAFC;
-
-  --border:        #E2E8F0;
-  --border-strong: #CBD5E1;
-
-  --shadow-sm:  0 1px 2px rgba(0,0,0,0.05);
-  --shadow-md:  0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -1px rgba(0,0,0,0.04);
-}
-
-* { box-sizing: border-box; }
-
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: #F8FAFC;
-  color: #0F172A;
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  body {
+    @apply font-sans font-medium antialiased text-zinc-900 bg-[#F7F9FC] dark:text-zinc-200 dark:bg-zinc-950 transition-colors duration-300;
+  }
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+::-webkit-scrollbar-thumb { @apply bg-zinc-300 dark:bg-zinc-700 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-zinc-400 dark:bg-zinc-600; }
 
 /* Page enter animation */
-.page-enter { animation: fadeSlideIn 0.25s ease both; }
-@keyframes fadeSlideIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+.page-enter { @apply animate-fade-in-up; }
 
 /* Table row hover */
-tbody tr { transition: background 0.1s ease; }
+tbody tr { transition: background 0.15s ease; }
 
 @layer components {
   .input-field {
-    @apply w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400
-           focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all duration-200
-           dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder:text-slate-500;
+    @apply w-full h-11 px-4 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder:text-zinc-400
+           focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 transition-all duration-200
+           dark:bg-zinc-800/50 dark:border-zinc-700/50 dark:text-white dark:placeholder:text-zinc-500;
   }
   .input-field.error {
     @apply border-red-500 focus:ring-red-500/20 focus:border-red-500;
@@ -68,11 +36,11 @@ tbody tr { transition: background 0.1s ease; }
 
 /* KPI card hover */
 .kpi-card {
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 .kpi-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.08);
+  @apply shadow-card-hover;
 }
 
 /* Reduced motion */

@@ -12,12 +12,12 @@ export default function AppShell() {
   }, [initTheme]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors">
+    <div className="flex h-screen overflow-hidden text-zinc-900 dark:text-zinc-100 transition-colors duration-300">
       <Sidebar />
-      <div className="flex-1 flex flex-col ml-60 min-w-0">
+      <div className="flex-1 flex flex-col ml-[260px] min-w-0">
         <TopBar />
         <main className="flex-1 overflow-y-auto">
-          <div className="p-6 max-w-screen-2xl mx-auto page-enter">
+          <div className="p-8 max-w-[1600px] mx-auto page-enter">
             <Outlet />
           </div>
         </main>

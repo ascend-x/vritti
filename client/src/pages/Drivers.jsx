@@ -76,7 +76,7 @@ export default function Drivers() {
   }
 
   const columns = [
-    { key: 'name', label: 'Name', render: (v) => <span className="font-medium text-slate-800">{v}</span> },
+    { key: 'name', label: 'Name', render: (v) => <span className="font-bold text-zinc-900 dark:text-zinc-100">{v}</span> },
     { key: 'license_number', label: 'License No', render: v => <span className="font-mono text-xs">{v}</span> },
     { key: 'license_category', label: 'Category' },
     { key: 'license_expiry', label: 'Expiry', render: v => <LicenseBadge expiry={v} /> },

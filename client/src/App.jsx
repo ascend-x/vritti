@@ -10,6 +10,7 @@ import Maintenance from './pages/Maintenance'
 import FuelExpenses from './pages/FuelExpenses'
 import Analytics from './pages/Analytics'
 import Settings from './pages/Settings'
+import TripTracking from './pages/TripTracking'
 
 function ProtectedRoute({ children }) {
   const user = useAuthStore(s => s.user)
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/vehicles" element={<Vehicles />} />
         <Route path="/drivers" element={<Drivers />} />
         <Route path="/trips" element={<Trips />} />
+        <Route path="/trips/:id" element={<TripTracking />} />
         <Route path="/maintenance" element={<Maintenance />} />
         <Route path="/fuel" element={<FuelExpenses />} />
         <Route path="/analytics" element={<Analytics />} />

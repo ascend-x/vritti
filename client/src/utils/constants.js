@@ -1,21 +1,21 @@
 // Status color mappings for vehicles, drivers, trips
 export const STATUS_STYLES = {
   // Vehicle statuses
-  Available:  { bg: 'bg-emerald-50',  text: 'text-emerald-700',  border: 'border-emerald-200',  dot: 'bg-emerald-500' },
-  'On Trip':  { bg: 'bg-blue-50',     text: 'text-blue-700',     border: 'border-blue-200',     dot: 'bg-blue-500' },
-  'In Shop':  { bg: 'bg-amber-50',    text: 'text-amber-700',    border: 'border-amber-200',    dot: 'bg-amber-500' },
-  Retired:    { bg: 'bg-slate-100',   text: 'text-slate-500',    border: 'border-slate-200',    dot: 'bg-slate-400' },
+  Available:  { bg: 'bg-emerald-50 dark:bg-emerald-500/10',  text: 'text-emerald-700 dark:text-emerald-400',  border: 'border-emerald-200 dark:border-emerald-500/20',  dot: 'bg-emerald-500' },
+  'On Trip':  { bg: 'bg-blue-50 dark:bg-blue-500/10',     text: 'text-blue-700 dark:text-blue-400',     border: 'border-blue-200 dark:border-blue-500/20',     dot: 'bg-blue-500' },
+  'In Shop':  { bg: 'bg-amber-50 dark:bg-amber-500/10',    text: 'text-amber-700 dark:text-amber-400',    border: 'border-amber-200 dark:border-amber-500/20',    dot: 'bg-amber-500' },
+  Retired:    { bg: 'bg-zinc-100 dark:bg-zinc-500/10',   text: 'text-zinc-600 dark:text-zinc-400',    border: 'border-zinc-200 dark:border-zinc-500/20',    dot: 'bg-zinc-500' },
   // Driver statuses
-  'Off Duty': { bg: 'bg-slate-100',   text: 'text-slate-500',    border: 'border-slate-200',    dot: 'bg-slate-400' },
-  Suspended:  { bg: 'bg-red-50',      text: 'text-red-700',      border: 'border-red-200',      dot: 'bg-red-500' },
+  'Off Duty': { bg: 'bg-zinc-100 dark:bg-zinc-500/10',   text: 'text-zinc-600 dark:text-zinc-400',    border: 'border-zinc-200 dark:border-zinc-500/20',    dot: 'bg-zinc-500' },
+  Suspended:  { bg: 'bg-red-50 dark:bg-red-500/10',      text: 'text-red-700 dark:text-red-400',      border: 'border-red-200 dark:border-red-500/20',      dot: 'bg-red-500' },
   // Trip statuses
-  Draft:      { bg: 'bg-slate-100',   text: 'text-slate-600',    border: 'border-slate-200',    dot: 'bg-slate-400' },
-  Dispatched: { bg: 'bg-blue-50',     text: 'text-blue-700',     border: 'border-blue-200',     dot: 'bg-blue-500' },
-  Completed:  { bg: 'bg-emerald-50',  text: 'text-emerald-700',  border: 'border-emerald-200',  dot: 'bg-emerald-500' },
-  Cancelled:  { bg: 'bg-red-50',      text: 'text-red-700',      border: 'border-red-200',      dot: 'bg-red-500' },
+  Draft:      { bg: 'bg-zinc-100 dark:bg-zinc-500/10',   text: 'text-zinc-600 dark:text-zinc-400',    border: 'border-zinc-200 dark:border-zinc-500/20',    dot: 'bg-zinc-500' },
+  Dispatched: { bg: 'bg-blue-50 dark:bg-blue-500/10',     text: 'text-blue-700 dark:text-blue-400',     border: 'border-blue-200 dark:border-blue-500/20',     dot: 'bg-blue-500' },
+  Completed:  { bg: 'bg-emerald-50 dark:bg-emerald-500/10',  text: 'text-emerald-700 dark:text-emerald-400',  border: 'border-emerald-200 dark:border-emerald-500/20',  dot: 'bg-emerald-500' },
+  Cancelled:  { bg: 'bg-red-50 dark:bg-red-500/10',      text: 'text-red-700 dark:text-red-400',      border: 'border-red-200 dark:border-red-500/20',      dot: 'bg-red-500' },
   // Maintenance
-  Active:     { bg: 'bg-amber-50',    text: 'text-amber-700',    border: 'border-amber-200',    dot: 'bg-amber-500' },
-  Closed:     { bg: 'bg-emerald-50',  text: 'text-emerald-700',  border: 'border-emerald-200',  dot: 'bg-emerald-500' },
+  Active:     { bg: 'bg-amber-50 dark:bg-amber-500/10',    text: 'text-amber-700 dark:text-amber-400',    border: 'border-amber-200 dark:border-amber-500/20',    dot: 'bg-amber-500' },
+  Closed:     { bg: 'bg-emerald-50 dark:bg-emerald-500/10',  text: 'text-emerald-700 dark:text-emerald-400',  border: 'border-emerald-200 dark:border-emerald-500/20',  dot: 'bg-emerald-500' },
 };
 
 export const ROLE_LABELS = {

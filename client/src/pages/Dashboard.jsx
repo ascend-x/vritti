@@ -9,7 +9,7 @@ import { formatCurrency, formatDateTime } from '../utils/constants'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 
 const STATUS_COLORS = {
-  Available: '#10B981', 'On Trip': '#3B82F6', 'In Shop': '#F59E0B', Retired: '#94A3B8'
+  Available: '#84cc16', 'On Trip': '#3B82F6', 'In Shop': '#F59E0B', Retired: '#A1A1AA'
 }
 
 export default function Dashboard() {
@@ -73,16 +73,16 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Monthly Revenue Bar Chart */}
         <Card className="lg:col-span-3">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Monthly Revenue (₹)</h3>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Monthly Revenue (₹)</h3>
           {monthlyRevenue.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">No revenue data yet</div>
+            <div className="h-48 flex items-center justify-center text-zinc-400 text-sm">No revenue data yet</div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={monthlyRevenue} barSize={24}>
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
-                <Tooltip formatter={v => [formatCurrency(v), 'Revenue']} contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: 12 }} />
-                <Bar dataKey="revenue" fill="#F59E0B" radius={[4,4,0,0]} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#A1A1AA' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11, fill: '#A1A1AA' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
+                <Tooltip formatter={v => [formatCurrency(v), 'Revenue']} contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', fontSize: 12, backgroundColor: '#18181b', color: '#fff' }} itemStyle={{ color: '#84cc16' }} />
+                <Bar dataKey="revenue" fill="#84cc16" radius={[4,4,0,0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -90,18 +90,18 @@ export default function Dashboard() {
 
         {/* Vehicle Status Donut */}
         <Card className="lg:col-span-2">
-          <h3 className="text-sm font-semibold text-slate-900 mb-4">Vehicle Status</h3>
+          <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Vehicle Status</h3>
           {vehicleStatus.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-slate-400 text-sm">No data</div>
+            <div className="h-48 flex items-center justify-center text-zinc-400 text-sm">No data</div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie data={vehicleStatus} dataKey="count" nameKey="status" cx="50%" cy="50%" innerRadius={55} outerRadius={80} paddingAngle={3}>
                   {vehicleStatus.map(entry => (
-                    <Cell key={entry.status} fill={STATUS_COLORS[entry.status] || '#94A3B8'} />
+                    <Cell key={entry.status} fill={STATUS_COLORS[entry.status] || '#A1A1AA'} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: 8, fontSize: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }} />
+                <Tooltip contentStyle={{ borderRadius: 12, fontSize: 12, border: 'none', boxShadow: '0 8px 30px rgba(0,0,0,0.12)', backgroundColor: '#18181b', color: '#fff' }} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
               </PieChart>
             </ResponsiveContainer>
@@ -111,28 +111,28 @@ export default function Dashboard() {
 
       {/* Recent Trips */}
       <Card>
-        <h3 className="text-sm font-semibold text-slate-900 mb-4">Recent Trips</h3>
-        <div className="overflow-x-auto">
+        <h3 className="text-sm font-semibold text-zinc-900 dark:text-white mb-4">Recent Trips</h3>
+        <div className="overflow-x-auto rounded-2xl border border-zinc-100/50 dark:border-white/5">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100">
+              <tr className="border-b border-zinc-100/50 dark:border-white/5 bg-zinc-50/50 dark:bg-zinc-800/30">
                 {['Route', 'Vehicle', 'Driver', 'Cargo', 'Revenue', 'Status', 'Time'].map(h => (
-                  <th key={h} className="pb-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider pr-4">{h}</th>
+                  <th key={h} className="px-5 py-3 text-left text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50">
+            <tbody className="divide-y divide-zinc-50 dark:divide-zinc-800/50">
               {recentTrips.length === 0 ? (
-                <tr><td colSpan={7} className="py-8 text-center text-slate-400 text-sm">No trips yet</td></tr>
-              ) : recentTrips.map(t => (
-                <tr key={t.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="py-3 pr-4 font-medium text-slate-800">{t.source} → {t.destination}</td>
-                  <td className="py-3 pr-4 font-mono text-xs text-slate-600">{t.vehicle_reg}</td>
-                  <td className="py-3 pr-4 text-slate-600">{t.driver_name}</td>
-                  <td className="py-3 pr-4 text-slate-600">{t.cargo_weight_kg} kg</td>
-                  <td className="py-3 pr-4 text-slate-800">{formatCurrency(t.revenue)}</td>
-                  <td className="py-3 pr-4"><StatusBadge status={t.status} /></td>
-                  <td className="py-3 text-slate-400 text-xs">{formatDateTime(t.created_at)}</td>
+                <tr><td colSpan={7} className="py-8 text-center text-zinc-400 dark:text-zinc-500 text-sm">No trips yet</td></tr>
+              ) : recentTrips.map((t, i) => (
+                <tr key={t.id} className={`transition-colors duration-150 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 ${i % 2 === 1 ? 'bg-zinc-50/30 dark:bg-zinc-800/10' : 'bg-transparent'}`}>
+                  <td className="px-5 py-3 font-medium text-zinc-800 dark:text-zinc-200">{t.source} → {t.destination}</td>
+                  <td className="px-5 py-3 font-mono text-xs font-semibold text-zinc-600 dark:text-zinc-400">{t.vehicle_reg}</td>
+                  <td className="px-5 py-3 text-zinc-600 dark:text-zinc-400">{t.driver_name}</td>
+                  <td className="px-5 py-3 text-zinc-600 dark:text-zinc-400">{t.cargo_weight_kg} kg</td>
+                  <td className="px-5 py-3 text-zinc-800 dark:text-zinc-200">{formatCurrency(t.revenue)}</td>
+                  <td className="px-5 py-3"><StatusBadge status={t.status} /></td>
+                  <td className="px-5 py-3 text-zinc-400 dark:text-zinc-500 text-xs font-medium">{formatDateTime(t.created_at)}</td>
                 </tr>
               ))}
             </tbody>

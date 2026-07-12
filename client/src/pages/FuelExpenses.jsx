@@ -83,21 +83,21 @@ export default function FuelExpenses() {
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand-50 rounded-xl flex items-center justify-center"><Fuel className="w-5 h-5 text-brand-600" /></div>
+        <div className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900/90 rounded-2xl border border-zinc-100/50 dark:border-white/5 shadow-soft dark:shadow-none">
+          <div className="flex gap-4 items-center">
+            <div className="p-3 bg-brand-50 dark:bg-brand-500/10 rounded-xl text-brand-600 dark:text-brand-400"><Fuel className="w-6 h-6" /></div>
             <div>
-              <p className="text-sm text-slate-500">Total Fuel Cost</p>
-              <p className="text-2xl font-bold font-display text-slate-900">{formatCurrency(fuelData.total_cost)}</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">Total Fuel Cost</p>
+              <p className="text-2xl font-bold font-display text-zinc-900 dark:text-white">{formatCurrency(fuelData.total_cost)}</p>
             </div>
           </div>
-        </Card>
+        </div>
         <Card>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center"><Plus className="w-5 h-5 text-purple-600" /></div>
             <div>
-              <p className="text-sm text-slate-500">Total Other Expenses</p>
-              <p className="text-2xl font-bold font-display text-slate-900">{formatCurrency(expData.total_amount)}</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">Total Other Expenses</p>
+              <p className="text-2xl font-bold font-display text-zinc-900 dark:text-white">{formatCurrency(expData.total_amount)}</p>
             </div>
           </div>
         </Card>
