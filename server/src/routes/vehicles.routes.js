@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db/database');
 const { authenticate, authorize } = require('../middleware/auth.middleware');
+const { logAudit } = require('./audit.routes');
 
 const router = express.Router();
 
@@ -71,6 +72,7 @@ router.post('/', authorize('fleet_manager'), (req, res) => {
     `).run(reg_number.toUpperCase(), name_model, type, max_load_kg, odometer_km || 0, acquisition_cost || 0, region || null, notes || null, document_url || null);
 
     const vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(result.lastInsertRowid);
+    logAudit(req.user?.id, req.user?.name, 'Added Vehicle', 'vehicle', vehicle.id, `${reg_number} - ${name_model}`);
     res.status(201).json(vehicle);
   } catch (err) {
     if (err.message?.includes('UNIQUE')) {
@@ -97,6 +99,7 @@ router.put('/:id', authorize('fleet_manager'), (req, res) => {
       notes=COALESCE(?,notes), document_url=COALESCE(?,document_url), updated_at=datetime('now') WHERE id=?
     `).run(name_model, type, max_load_kg, odometer_km, acquisition_cost, region, notes, document_url, req.params.id);
 
+    logAudit(req.user?.id, req.user?.name, 'Updated Vehicle', 'vehicle', parseInt(req.params.id), vehicle.reg_number);
     res.json(db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id));
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });
@@ -111,6 +114,7 @@ router.patch('/:id/retire', authorize('fleet_manager'), (req, res) => {
     if (vehicle.status === 'On Trip') return res.status(409).json({ error: true, message: 'Cannot retire a vehicle that is currently On Trip' });
 
     db.prepare(`UPDATE vehicles SET status='Retired', updated_at=datetime('now') WHERE id=?`).run(req.params.id);
+    logAudit(req.user?.id, req.user?.name, 'Retired Vehicle', 'vehicle', parseInt(req.params.id), vehicle.reg_number);
     res.json(db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id));
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });

@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db/database');
 const { authenticate, authorize } = require('../middleware/auth.middleware');
+const { logAudit } = require('./audit.routes');
 
 const router = express.Router();
 router.use(authenticate);
@@ -41,7 +42,9 @@ router.post('/', authorize('fleet_manager', 'dispatcher', 'financial_analyst'), 
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(vehicle_id, trip_id || null, date, liters, cost_per_liter, odometer_at_fill || null, filled_by || null, notes || null);
 
-    res.status(201).json(db.prepare('SELECT fl.*, v.reg_number as vehicle_reg FROM fuel_logs fl JOIN vehicles v ON fl.vehicle_id = v.id WHERE fl.id = ?').get(result.lastInsertRowid));
+    const fuelLog = db.prepare('SELECT fl.*, v.reg_number as vehicle_reg FROM fuel_logs fl JOIN vehicles v ON fl.vehicle_id = v.id WHERE fl.id = ?').get(result.lastInsertRowid);
+    logAudit(req.user?.id, req.user?.name, 'Added Fuel Log', 'fuel', fuelLog.id, `${liters}L for ${fuelLog.vehicle_reg}`);
+    res.status(201).json(fuelLog);
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });
   }
@@ -92,7 +95,9 @@ router.post('/expenses', authorize('fleet_manager', 'dispatcher', 'financial_ana
       VALUES (?, ?, ?, ?, ?, ?)
     `).run(vehicle_id || null, trip_id || null, category, amount, date, description || null);
 
-    res.status(201).json(db.prepare('SELECT * FROM expenses WHERE id = ?').get(result.lastInsertRowid));
+    const expense = db.prepare('SELECT * FROM expenses WHERE id = ?').get(result.lastInsertRowid);
+    logAudit(req.user?.id, req.user?.name, 'Added Expense', 'fuel', expense.id, `${category}: ₹${amount}`);
+    res.status(201).json(expense);
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });
   }
