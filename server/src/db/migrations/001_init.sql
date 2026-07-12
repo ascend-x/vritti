@@ -34,6 +34,17 @@ CREATE TABLE IF NOT EXISTS vehicles (
 );
 
 -- ─────────────────────────────────────────────────────────
+-- VEHICLE DOCUMENTS
+-- ─────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS vehicle_documents (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  vehicle_id  INTEGER NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  name        TEXT    NOT NULL,
+  file_path   TEXT    NOT NULL,
+  created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+-- ─────────────────────────────────────────────────────────
 -- DRIVERS
 -- ─────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS drivers (

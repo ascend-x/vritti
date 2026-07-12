@@ -11,6 +11,9 @@ export const createVehicle = (data) => api.post('/vehicles', data).then(r => r.d
 export const updateVehicle = (id, data) => api.put(`/vehicles/${id}`, data).then(r => r.data);
 export const retireVehicle = (id) => api.patch(`/vehicles/${id}/retire`).then(r => r.data);
 export const getAvailableVehicles = () => api.get('/vehicles/available-for-dispatch').then(r => r.data);
+export const getVehicleDocuments = (id) => api.get(`/vehicles/${id}/documents`).then(r => r.data);
+export const uploadVehicleDocument = (id, formData) => api.post(`/vehicles/${id}/documents`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data);
+export const deleteVehicleDocument = (docId) => api.delete(`/vehicles/documents/${docId}`).then(r => r.data);
 
 // Drivers
 export const getDrivers = (params) => api.get('/drivers', { params }).then(r => r.data);
@@ -45,9 +48,9 @@ export const createExpense = (data) => api.post('/fuel-logs/expenses', data).the
 export const deleteExpense = (id) => api.delete(`/fuel-logs/expenses/${id}`).then(r => r.data);
 
 // Dashboard
-export const getDashboardKPIs = () => api.get('/dashboard/kpis').then(r => r.data);
-export const getRecentTrips = (limit = 10) => api.get('/dashboard/recent-trips', { params: { limit } }).then(r => r.data);
-export const getVehicleStatusDist = () => api.get('/dashboard/vehicle-status-distribution').then(r => r.data);
+export const getDashboardKPIs = (params) => api.get('/dashboard/kpis', { params }).then(r => r.data);
+export const getRecentTrips = (limit = 10, params = {}) => api.get('/dashboard/recent-trips', { params: { limit, ...params } }).then(r => r.data);
+export const getVehicleStatusDist = (params) => api.get('/dashboard/vehicle-status-distribution', { params }).then(r => r.data);
 export const getMonthlyRevenue = (year) => api.get('/dashboard/monthly-revenue', { params: { year } }).then(r => r.data);
 export const getTripsPerDay = () => api.get('/dashboard/trips-per-day').then(r => r.data);
 export const getExpiringLicenses = () => api.get('/dashboard/expiring-licenses').then(r => r.data);

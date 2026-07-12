@@ -43,6 +43,10 @@ app.use(statusMonitor({
   title: 'VRITTI Server Health',
 }));
 
+// Serve uploads statically
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
 // Prometheus Metrics
 promClient.collectDefaultMetrics();
 const httpRequestDurationMicroseconds = new promClient.Histogram({
@@ -114,26 +118,45 @@ app.use((err, req, res, next) => {
 // Setup Email Reminders Job (Bonus Feature)
 const cron = require('node-cron');
 const db = require('./db/database');
+const nodemailer = require('nodemailer');
 
-cron.schedule('0 9 * * *', () => {
-  console.log('[CRON] Running daily license expiry check...');
-  try {
-    const expiring = db.prepare(`
-      SELECT name, license_number, license_expiry 
-      FROM drivers 
-      WHERE status != 'Suspended' AND license_expiry <= date('now', '+30 days')
-    `).all();
-    
-    if (expiring.length > 0) {
-      console.log(`[CRON] Found ${expiring.length} expiring licenses. Sending email reminders to Safety Officer...`);
-      expiring.forEach(d => {
-        console.log(`[EMAIL MOCK] To: safety@vritti.com | Subj: License Expiring Soon: ${d.name} (${d.license_number}) by ${d.license_expiry}`);
-      });
+nodemailer.createTestAccount().then((testAccount) => {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    secure: false,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass
     }
-  } catch (err) {
-    console.error('[CRON] Error checking licenses:', err);
-  }
-});
+  });
+
+  cron.schedule('0 9 * * *', async () => {
+    console.log('[CRON] Running daily license expiry check...');
+    try {
+      const expiring = db.prepare(`
+        SELECT name, license_number, license_expiry 
+        FROM drivers 
+        WHERE status != 'Suspended' AND license_expiry <= date('now', '+30 days')
+      `).all();
+      
+      if (expiring.length > 0) {
+        console.log(`[CRON] Found ${expiring.length} expiring licenses. Sending email reminders to Safety Officer...`);
+        for (const d of expiring) {
+          const info = await transporter.sendMail({
+            from: '"TransitOps System" <system@vritti.com>',
+            to: 'safety@vritti.com',
+            subject: `Action Required: License Expiring Soon - ${d.name}`,
+            text: `Driver ${d.name} (License: ${d.license_number}) has a license expiring on ${d.license_expiry}. Please ensure renewal to remain compliant.`,
+          });
+          console.log(`[EMAIL] Sent for ${d.name}. Preview URL: ${nodemailer.getTestMessageUrl(info)}`);
+        }
+      }
+    } catch (err) {
+      console.error('[CRON] Error checking licenses:', err);
+    }
+  });
+}).catch(console.error);
 
 
 const PORT = process.env.PORT || 5000;

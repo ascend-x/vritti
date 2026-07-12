@@ -2,6 +2,21 @@ const express = require('express');
 const db = require('../db/database');
 const { authenticate, authorize } = require('../middleware/auth.middleware');
 const { logAudit } = require('./audit.routes');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '../../uploads');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '_'));
+  }
+});
+const upload = multer({ storage });
 
 const router = express.Router();
 
@@ -116,6 +131,45 @@ router.patch('/:id/retire', authorize('fleet_manager'), (req, res) => {
     db.prepare(`UPDATE vehicles SET status='Retired', updated_at=datetime('now') WHERE id=?`).run(req.params.id);
     logAudit(req.user?.id, req.user?.name, 'Retired Vehicle', 'vehicle', parseInt(req.params.id), vehicle.reg_number);
     res.json(db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id));
+  } catch (err) {
+    res.status(500).json({ error: true, message: err.message });
+  }
+});
+
+// GET /api/vehicles/:id/documents
+router.get('/:id/documents', (req, res) => {
+  try {
+    const docs = db.prepare('SELECT * FROM vehicle_documents WHERE vehicle_id = ? ORDER BY created_at DESC').all(req.params.id);
+    res.json(docs);
+  } catch (err) {
+    res.status(500).json({ error: true, message: err.message });
+  }
+});
+
+// POST /api/vehicles/:id/documents
+router.post('/:id/documents', authorize('fleet_manager'), upload.single('file'), (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: true, message: 'No file uploaded' });
+    const { name } = req.body;
+    const filePath = `/uploads/${req.file.filename}`;
+    const result = db.prepare(`INSERT INTO vehicle_documents (vehicle_id, name, file_path) VALUES (?, ?, ?)`).run(req.params.id, name || req.file.originalname, filePath);
+    logAudit(req.user?.id, req.user?.name, 'Uploaded Document', 'vehicle', parseInt(req.params.id), name || req.file.originalname);
+    res.status(201).json({ id: result.lastInsertRowid, vehicle_id: req.params.id, name: name || req.file.originalname, file_path: filePath });
+  } catch (err) {
+    res.status(500).json({ error: true, message: err.message });
+  }
+});
+
+// DELETE /api/vehicles/documents/:docId
+router.delete('/documents/:docId', authorize('fleet_manager'), (req, res) => {
+  try {
+    const doc = db.prepare('SELECT * FROM vehicle_documents WHERE id = ?').get(req.params.docId);
+    if (!doc) return res.status(404).json({ error: true, message: 'Document not found' });
+    db.prepare('DELETE FROM vehicle_documents WHERE id = ?').run(req.params.docId);
+    const fullPath = path.join(__dirname, '../..', doc.file_path);
+    if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
+    logAudit(req.user?.id, req.user?.name, 'Deleted Document', 'vehicle', doc.vehicle_id, doc.name);
+    res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: true, message: err.message });
   }

@@ -17,15 +17,16 @@ const STATUS_COLORS = {
 export default function Dashboard() {
   const [dismissBanner, setDismissBanner] = useState(false)
   const [dismissFatigue, setDismissFatigue] = useState(false)
+  const [filters, setFilters] = useState({ type: '', status: '', region: '' })
 
   const { data: kpis, isLoading: kpiLoading } = useQuery({
-    queryKey: ['kpis'], queryFn: getDashboardKPIs, refetchInterval: 30000
+    queryKey: ['kpis', filters], queryFn: () => getDashboardKPIs(filters), refetchInterval: 30000
   })
   const { data: recentTrips = [] } = useQuery({
-    queryKey: ['recent-trips'], queryFn: () => getRecentTrips(10), refetchInterval: 30000
+    queryKey: ['recent-trips', filters], queryFn: () => getRecentTrips(10, filters), refetchInterval: 30000
   })
   const { data: vehicleStatus = [] } = useQuery({
-    queryKey: ['vehicle-status-dist'], queryFn: getVehicleStatusDist
+    queryKey: ['vehicle-status-dist', filters], queryFn: () => getVehicleStatusDist(filters)
   })
   const { data: monthlyRevenue = [] } = useQuery({
     queryKey: ['monthly-revenue'], queryFn: () => getMonthlyRevenue(new Date().getFullYear())
@@ -77,8 +78,47 @@ export default function Dashboard() {
     <div className="space-y-6">
       
       {/* Header Actions */}
-      <div className="flex justify-end">
-        <button onClick={generatePDF} className="flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-brand-950 font-bold rounded-xl transition-colors shadow-brand">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex gap-2">
+          <select 
+            className="border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 outline-none focus:border-brand-500"
+            value={filters.type} 
+            onChange={e => setFilters({...filters, type: e.target.value})}
+          >
+            <option value="">All Types</option>
+            <option value="Van">Van</option>
+            <option value="Truck">Truck</option>
+            <option value="Bike">Bike</option>
+            <option value="Bus">Bus</option>
+            <option value="Pickup">Pickup</option>
+            <option value="Other">Other</option>
+          </select>
+          
+          <select 
+            className="border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 outline-none focus:border-brand-500"
+            value={filters.status} 
+            onChange={e => setFilters({...filters, status: e.target.value})}
+          >
+            <option value="">All Statuses</option>
+            <option value="Available">Available</option>
+            <option value="On Trip">On Trip</option>
+            <option value="In Shop">In Shop</option>
+            <option value="Retired">Retired</option>
+          </select>
+          
+          <select 
+            className="border border-zinc-200 dark:border-zinc-700 rounded-xl px-3 py-2 text-sm font-semibold text-zinc-700 dark:text-zinc-300 bg-white dark:bg-zinc-800 outline-none focus:border-brand-500"
+            value={filters.region} 
+            onChange={e => setFilters({...filters, region: e.target.value})}
+          >
+            <option value="">All Regions</option>
+            <option value="North">North</option>
+            <option value="South">South</option>
+            <option value="East">East</option>
+            <option value="West">West</option>
+          </select>
+        </div>
+        <button onClick={generatePDF} className="flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-brand-950 font-bold rounded-xl transition-colors shadow-brand shrink-0">
           <Download className="w-4 h-4" />
           Download PDF Report
         </button>

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Truck, Edit, Archive, ExternalLink } from 'lucide-react'
+import { Plus, Truck, Edit, Archive, ExternalLink, FileText, Trash2, Upload } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { getVehicles, createVehicle, updateVehicle, retireVehicle } from '../api'
+import { getVehicles, createVehicle, updateVehicle, retireVehicle, getVehicleDocuments, uploadVehicleDocument, deleteVehicleDocument } from '../api'
 import DataTable from '../components/ui/DataTable'
 import StatusBadge from '../components/ui/StatusBadge'
 import Modal from '../components/ui/Modal'
@@ -21,6 +21,7 @@ export default function Vehicles() {
 
   const [filters, setFilters] = useState({ status: '', type: '', region: '', search: '' })
   const [modal, setModal] = useState(null) // null | 'add' | 'edit'
+  const [docModal, setDocModal] = useState(null) // vehicle object or null
   const [selected, setSelected] = useState(null)
   const [confirmRetire, setConfirmRetire] = useState(null)
   const [form, setForm] = useState(EMPTY_FORM)
@@ -46,6 +47,32 @@ export default function Vehicles() {
     onSuccess: () => { qc.invalidateQueries(['vehicles']); qc.invalidateQueries(['kpis']); toast.success('Vehicle retired'); setConfirmRetire(null) },
     onError: err => toast.error(err.response?.data?.message || 'Retire failed'),
   })
+
+  const { data: docs = [], isLoading: docsLoading } = useQuery({
+    queryKey: ['documents', docModal?.id],
+    queryFn: () => getVehicleDocuments(docModal.id),
+    enabled: !!docModal
+  })
+
+  const uploadMut = useMutation({
+    mutationFn: ({ id, formData }) => uploadVehicleDocument(id, formData),
+    onSuccess: () => { qc.invalidateQueries(['documents', docModal?.id]); toast.success('Document uploaded'); },
+    onError: () => toast.error('Upload failed')
+  })
+
+  const deleteDocMut = useMutation({
+    mutationFn: deleteVehicleDocument,
+    onSuccess: () => { qc.invalidateQueries(['documents', docModal?.id]); toast.success('Document deleted'); },
+    onError: () => toast.error('Delete failed')
+  })
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('file', file);
+    uploadMut.mutate({ id: docModal.id, formData });
+  }
 
   const openAdd = () => { setForm(EMPTY_FORM); setErrors({}); setModal('add') }
   const openEdit = (v) => { setSelected(v); setForm({ ...v }); setErrors({}); setModal('edit') }
@@ -76,7 +103,12 @@ export default function Vehicles() {
     { key: 'acquisition_cost', label: 'Acq. Cost', render: v => formatCurrency(v) },
     { key: 'region', label: 'Region', render: v => v || '—' },
     { key: 'status', label: 'Status', render: v => <StatusBadge status={v} /> },
-    { key: 'document_url', label: 'Docs', render: v => v ? <a href={v} target="_blank" rel="noreferrer" className="text-brand-500 hover:underline flex items-center gap-1" onClick={e => e.stopPropagation()}><ExternalLink className="w-3 h-3"/> View</a> : <span className="text-slate-400">—</span> },
+    { key: 'docs', label: 'Docs', render: (_, row) => (
+        <button onClick={e => { e.stopPropagation(); setDocModal(row) }} className="text-brand-500 hover:underline flex items-center gap-1 font-medium text-xs">
+          Manage
+        </button>
+      )
+    },
     {
       key: 'actions', label: '', sortable: false,
       render: (_, row) => (
@@ -181,6 +213,43 @@ export default function Vehicles() {
         confirmLabel="Retire Vehicle"
         message={`Are you sure you want to retire ${confirmRetire?.reg_number}? This will remove it from all dispatch selections permanently.`}
       />
+
+      {/* Document Modal */}
+      <Modal isOpen={!!docModal} onClose={() => setDocModal(null)} title={`Documents: ${docModal?.reg_number}`} footer={<Button onClick={() => setDocModal(null)}>Close</Button>}>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">Manage documents like insurance, RC, or permits for this vehicle.</p>
+            <label className="flex items-center gap-2 px-3 py-1.5 bg-brand-500 text-brand-950 font-semibold rounded-lg cursor-pointer hover:bg-brand-600 transition text-sm">
+              <Upload className="w-4 h-4" />
+              {uploadMut.isPending ? 'Uploading...' : 'Upload'}
+              <input type="file" className="hidden" onChange={handleFileUpload} disabled={uploadMut.isPending} />
+            </label>
+          </div>
+          
+          <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden divide-y divide-zinc-200 dark:divide-zinc-800">
+            {docsLoading ? (
+              <div className="p-4 text-center text-zinc-500 text-sm">Loading...</div>
+            ) : docs.length === 0 ? (
+              <div className="p-4 text-center text-zinc-500 text-sm">No documents found.</div>
+            ) : (
+              docs.map(d => (
+                <div key={d.id} className="p-3 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-5 h-5 text-zinc-400" />
+                    <div>
+                      <a href={`http://localhost:5000${d.file_path}`} target="_blank" rel="noreferrer" className="text-sm font-medium text-brand-600 dark:text-brand-400 hover:underline">{d.name}</a>
+                      <p className="text-xs text-zinc-500">{new Date(d.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                  <button onClick={() => deleteDocMut.mutate(d.id)} className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition" disabled={deleteDocMut.isPending}>
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
