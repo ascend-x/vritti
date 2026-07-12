@@ -1,7 +1,30 @@
 # VRITTI ⚡ 
-**Flow State Transport Operations Platform**
+**Smart Transport Operations Platform**
 
 VRITTI is an end-to-end transport operations platform that digitizes vehicle, driver, dispatch, maintenance, and expense management while enforcing strict business rules and providing real-time operational insights.
+
+---
+
+## 🛠️ Tech Stack
+
+**Frontend:**
+- **Framework:** React 18 with Vite
+- **Styling:** Tailwind CSS, Lucide React (Icons)
+- **State Management:** Zustand (Auth/UI State), TanStack React Query (Data Fetching & Caching)
+- **Charts & Reports:** Recharts (Data Visualization), jsPDF & jsPDF-AutoTable (PDF Generation)
+- **Maps & Routing:** Leaflet, React-Leaflet, OSRM (Routing), Open-Meteo (Weather Data)
+
+**Backend:**
+- **Server:** Node.js, Express.js
+- **Database:** SQLite3 (via `better-sqlite3` for high-performance synchronous execution)
+- **Authentication:** JSON Web Tokens (JWT), bcryptjs
+- **Real-time & Cron:** Socket.io (Live events), node-cron (Scheduled jobs)
+- **File Management:** Multer (Document uploads)
+- **Email:** Nodemailer (Automated license expiry reminders)
+- **Metrics:** Prometheus (`prom-client`), Express Status Monitor
+
+**Infrastructure:**
+- Docker & Docker Compose (Multi-container setup with Nginx reverse proxy)
 
 ---
 
@@ -58,15 +81,18 @@ stateDiagram-v2
 
 ### 🗺️ 2. Route Optimization & Tracking
 - **Smart Routing**: Integrates with OSRM (Open Source Routing Machine) to visualize and optimize travel paths between origin and destination.
+- **Route Weather Insights**: Fetches real-time weather conditions at the source, midpoint, and destination to provide an overall route safety assessment.
 - **Live Trip Board**: A drag-and-drop Kanban board for managing trips dynamically across states (Draft -> Dispatched -> Completed).
 
 ### 🚛 3. Fleet Registry & Vehicle Management
 - **Complete Vehicle Profiles**: Track essential metrics like max load capacity, acquisition costs, current odometer readings, and regional assignments.
+- **Document Management**: Upload and manage vehicle documents (Insurance, RC, Permits) securely via the dashboard.
 - **Intelligent Validations**: Prevents dispatching vehicles that are overloaded (cargo exceeds max load), currently on a trip, or in maintenance.
 
 ### 🧑‍✈️ 4. Driver Management & Leaderboard
 - **Driver Leaderboard**: Gamified system ranking drivers by safety scores, completed trips, and revenue generated.
 - **License Expiry Monitoring**: Smart alerts and visual badges for licenses expiring within 30 days. Automatically prevents dispatching drivers with expired licenses.
+- **Automated Email Reminders**: A daily background cron job automatically sends email alerts to the Safety Officer for any driver licenses expiring soon.
 - **Safety Scores**: Gamified safety tracking. Safety Officers can manually adjust scores based on driving behavior, directly affecting dispatch prioritization.
 
 ### 🔔 5. Real-Time Operations & Auditing
@@ -82,8 +108,10 @@ stateDiagram-v2
 - **Granular Fuel Logs**: Record liters, cost per liter, and filling station data. Ties directly into the vehicle's overall operational costs.
 
 ### 📊 8. Analytics & ROI Reporting
+- **Dynamic KPI Dashboard**: Global KPI view with robust filtering by Vehicle Type, Status, and Region.
 - **Cost Breakdown**: Stacked charts showing Fuel vs. Maintenance costs per vehicle.
 - **Automated ROI Calculations**: Real-time calculation of a vehicle's Return on Investment (Revenue - Operational Costs / Acquisition Cost).
+- **Export & PDF**: Generate executive PDF reports or download raw data as CSV.
 
 ### 🛡️ 9. Role-Based Access Control (RBAC)
 VRITTI is built with enterprise-grade modular permissions:
@@ -115,7 +143,7 @@ docker compose up -d --build
 - **Frontend App**: [http://localhost:8080](http://localhost:8080)
 - **Backend API**: [http://localhost:5000/api](http://localhost:5000/api)
 
-> **Note**: Your database is persisted locally in the `./server/data` directory. If you want to seed it with demo data, you can run `npm run seed` inside the `./server` folder locally before starting docker.
+> **Note**: Your database is persisted locally in the `./server/data` directory. Uploaded documents are saved in `./server/uploads`. If you want to seed the database with demo data, you can run `npm run seed` inside the `./server` folder locally before starting docker.
 
 ---
 
