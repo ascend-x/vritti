@@ -31,7 +31,7 @@ export default function AIAssistant() {
     let reply = "I specialize in logistics operations! You can ask me to find **available trucks**, check **available drivers**, track **active trips**, or calculate your **revenue**.";
 
     try {
-      const lowerQuery = query.toLowerCase();
+      const lowerQuery = queryToSubmit.toLowerCase();
       
       if (lowerQuery.includes('available') && (lowerQuery.includes('truck') || lowerQuery.includes('vehicle'))) {
         const vehicles = await getAvailableVehicles();
