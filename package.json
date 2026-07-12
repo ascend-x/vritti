@@ -1,0 +1,12 @@
+{
+  "name": "vritti",
+  "version": "1.0.0",
+  "description": "VRITTI - Smart Transport Operations Platform",
+  "scripts": {
+    "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm run dev\"",
+    "seed": "cd server && npm run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
