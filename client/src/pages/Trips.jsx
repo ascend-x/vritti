@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Send, CheckCircle, XCircle, Edit } from 'lucide-react'
+import { Plus, Send, CheckCircle, XCircle, Edit, QrCode } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 import toast from 'react-hot-toast'
 import { getTrips, createTrip, dispatchTrip, completeTrip, cancelTrip, getAvailableVehicles, getAvailableDrivers } from '../api'
 import DataTable from '../components/ui/DataTable'
@@ -46,6 +47,7 @@ export default function Trips() {
   const [modal, setModal] = useState(null) // 'create' | 'complete' | null
   const [selected, setSelected] = useState(null)
   const [cancelConfirm, setCancelConfirm] = useState(null)
+  const [qrModal, setQrModal] = useState(null)
   const [tripForm, setTripForm] = useState(EMPTY_TRIP)
   const [completeForm, setCompleteForm] = useState(EMPTY_COMPLETE)
   const [errors, setErrors] = useState({})
@@ -108,6 +110,9 @@ export default function Trips() {
       key: 'actions', label: '', sortable: false,
       render: (_, row) => (
         <div className="flex gap-1">
+          <button onClick={e => { e.stopPropagation(); setQrModal(row) }} title="Show QR Manifest" className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-500 hover:text-slate-900 transition-colors">
+            <QrCode className="w-3.5 h-3.5" />
+          </button>
           {can(role, 'canDispatchTrip') && row.status === 'Draft' && (
             <button onClick={e => { e.stopPropagation(); dispatchMut.mutate(row.id) }} title="Dispatch" className="p-1.5 hover:bg-blue-50 rounded-lg text-slate-500 hover:text-blue-600 transition-colors">
               <Send className="w-3.5 h-3.5" />
@@ -223,6 +228,45 @@ export default function Trips() {
               <Input label="Cost per Liter (₹)" type="number" value={completeForm.cost_per_liter} onChange={e => setCompleteForm(f => ({ ...f, cost_per_liter: e.target.value }))} placeholder="95.50" />
             </div>
           </div>
+        </div>
+      </Modal>
+
+      <Modal isOpen={!!qrModal} onClose={() => setQrModal(null)} title="Digital Driver Manifest" size="sm">
+        <div className="flex flex-col items-center justify-center space-y-6 pb-2">
+          <div className="text-center space-y-1">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white">Trip #{qrModal?.id}</h2>
+            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">{qrModal?.source} ➔ {qrModal?.destination}</p>
+          </div>
+          
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-200">
+            {qrModal && (
+              <QRCodeSVG 
+                value={JSON.stringify({ 
+                  trip_id: qrModal.id, 
+                  vehicle: qrModal.vehicle_reg, 
+                  driver: qrModal.driver_name,
+                  route: `${qrModal.source} to ${qrModal.destination}`,
+                  status: qrModal.status
+                })} 
+                size={220} 
+                level="M" 
+                includeMargin={false} 
+              />
+            )}
+          </div>
+          
+          <div className="w-full bg-slate-50 rounded-xl p-4 border border-slate-100 flex justify-between items-center">
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Driver</p>
+              <p className="text-sm font-bold text-slate-900">{qrModal?.driver_name}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Vehicle</p>
+              <p className="text-sm font-bold text-brand-600 font-mono">{qrModal?.vehicle_reg}</p>
+            </div>
+          </div>
+
+          <p className="text-xs text-slate-500 font-medium">Have your driver scan this QR code to download their manifest.</p>
         </div>
       </Modal>
 
