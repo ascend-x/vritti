@@ -1,12 +1,12 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Truck, LayoutDashboard, Users, MapPin, Wrench, Fuel, BarChart3, Settings, LogOut, Zap } from 'lucide-react';
+import { Truck, LayoutDashboard, Users, MapPin, Wrench, Fuel, BarChart3, Settings, LogOut, Zap, Compass, Trophy, Leaf, Activity, Kanban } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
 import { getNavItems } from '../../utils/rbac';
 import { ROLE_LABELS } from '../../utils/constants';
 import { logout } from '../../api';
 import toast from 'react-hot-toast';
 
-const ICON_MAP = { LayoutDashboard, Truck, Users, MapPin, Wrench, Fuel, BarChart3, Settings };
+const ICON_MAP = { LayoutDashboard, Truck, Users, MapPin, Wrench, Fuel, BarChart3, Settings, Compass, Trophy, Leaf, Activity, Kanban };
 
 export default function Sidebar() {
   const { user, clearAuth } = useAuthStore();
